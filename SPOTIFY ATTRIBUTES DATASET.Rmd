@@ -1,43 +1,37 @@
 ---
-title: "Spotify Attributes dataset"
-author: "Kaustubh Dangche,Lakshmi Sindhu Pulugundla & Lasya Priya Thota"
+title: "SPOTIFY ATTRIBUTES REGRESSION PROJECT -"
+author: "Kaustubh Dangche, Lakshmi Sindhu Pulugundla & Lasya Priya Thota"
 date: "2024-11-08"
-output: html_document
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# 1. Data Collection and Pre-Processing :
 
-# SPOTIFY ATTRIBUTES DATASET
-
-
-## Data Collection :-
-
-
-### Load the necessary libraries & dataset :
+## 1.1 Load the necessary libraries & dataset :
 
 ```{r}
 # Load necessary libraries
 library(dplyr)  # For data manipulation
 library(ggplot2)  # Optional, for visualization if needed
 
-
 # load the Spotify attribute dataset
-spotify_data <- read.csv("D:/Kaustubh_Masters/3 Sem/Regression- MATH 564/Project/Spotify_Song_Attributes.csv/Spotify_Song_Attributes.csv"
-)
-
-
-
+data <- read.csv("Spotify_Song_Attributes.csv")
+# Create of a copy of the spotify attribute dataset
+spotify_data <- data
 # View the first few rows to understand the structure
 head(spotify_data)
 
 
 ```
-
-
-#### View Dataset Structure :-
+## 1.2 View Dataset Structure :-
 
 
 ```{r}
@@ -46,7 +40,7 @@ str(spotify_data)
 
 ```
 
-#### Summary of Each Column :- 
+## 1.3 Summary of Each Column :- 
 
 ```{r}
 # View a summary of each column (e.g., min, max, mean, etc.)
@@ -54,7 +48,7 @@ str(spotify_data)
 
 ```
 
-### Handling Missing Values :- 
+## 1.4 Handling Missing Values :- 
 
 
 ```{r}
@@ -62,13 +56,13 @@ str(spotify_data)
 colSums(is.na(spotify_data))
 
 ```
-#### Columns with Zero Missing Values :-  Columns like trackName, artistName, msPlayed, genre, id, uri, track_href, analysis_url, and type have no missing values, ensuring they are complete for analysis.
+#### We can see: 
+1.  Columns with Zero Missing Values :-  Columns like trackName, artistName, msPlayed, genre, id, uri, track_href, analysis_url, and type have no missing values, ensuring they are complete for analysis.
 
-#### Columns with 550 Missing Values :-  Columns such as danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration_ms, and time_signature have significant missing values (550). This indicates a need to address these missing entries to ensure reliable analysis.
+2. Columns with 550 Missing Values :-  Columns such as danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration_ms, and time_signature have significant missing values (550). This indicates a need to address these missing entries to ensure reliable analysis.
 
 
-### Remove Missing Values
-
+### 1.4.1 Remove Missing Values
 
 ```{r}
 # Option 1: Remove rows with missing values (if they are few)
@@ -76,8 +70,7 @@ spotify_data <- na.omit(spotify_data)
 
 ```
 
-
-### Check missing values have been successfully removed or not 
+### 1.4.2 Check missing values have been successfully removed or not 
 
 ```{r}
 # Check for missing values in each column after applying na.omit function 
@@ -85,22 +78,16 @@ colSums(is.na(spotify_data))
 
 ```
 
-#### If all values are zero in the output, it confirms that no missing data remains in the dataset. This clean dataset now contains only complete rows, ideal for accurate and consistent analysis.
+#### All values being zero in the output confirms that no missing data remains in the dataset. This clean dataset now contains only complete rows, ideal for accurate and consistent analysis.
 
-
-
-
-
-### Just check missing values removed from structure data or not.
+##### Just check missing values removed from structure data or not.
 
 ```{r}
-
 str(spotify_data)
 
 ```
 
-
-### Remove unwanted columns :- 
+## 1.5 Remove unwanted columns :
 
 ```{r}
 # Load dplyr library
@@ -115,17 +102,11 @@ spotify_data <- spotify_data %>% select(-id, -uri, -track_href, -analysis_url, -
 
 ### Statistical Reasoning for Dropping Variables:
 
-###  With msPlayed as the dependent variable, genre and artistName as categorical predictors, and danceability, energy, and acousticness as continuous predictors, the removed columns (id, uri, track_href, analysis_url, trackName, and type) do not contribute meaningfully :
+**With msPlayed as the dependent variable, genre and artistName as categorical predictors, and danceability, energy, and acousticness as continuous predictors, the removed columns (id, uri, track_href, analysis_url, trackName, and type) do not contribute meaningfully :**
 
-#### Identifiers and URLs (e.g., id, uri, track_href, analysis_url): These columns are unique per observation, hence irrelevant for generalizing to other data.
-
-#### trackName: The track name does not significantly contribute to the variance in msPlayed as it is non-numeric and non-informative for predictive modeling.
-
-#### type: This column is constant (e.g., "audio"), offering no variability for analysis.
-
-
-
-
+- Identifiers and URLs (e.g., id, uri, track_href, analysis_url): These columns are unique per observation, hence irrelevant for generalizing to other data.
+  - trackName: The track name does not significantly contribute to the variance in msPlayed as it is non-numeric and non-informative for predictive modeling.
+  - type: This column is constant (e.g., "audio"), offering no variability for analysis.
 
 ```{r}
 # Check the specified column has been removed or not
@@ -133,13 +114,9 @@ str(spotify_data)
 
 ```
 
+## 1.6 Data Cleaning :- 
 
-
-### Data Cleaning :- 
-
-
-####  Check whitespace is present or not in artistName column 
-
+### 1.6.1 Check whitespace is present or not in artistName column 
 
 ```{r}
 # Check for leading or trailing whitespace
@@ -148,11 +125,7 @@ whitespace_issues <- spotify_data$artistName[grepl("^\\s|\\s$", spotify_data$art
 # Display entries with whitespace issues
 print(whitespace_issues)
 
-
 ```
-
-
-
 
 ```{r}
 # Identify special characters in artist names
@@ -161,23 +134,13 @@ special_characters <- spotify_data$artistName[grepl("[^a-zA-Z0-9\\s]", spotify_d
 # Display entries with special characters
 print(special_characters)
 
-
 ```
-
-#### print(whitespace_issues) and print(special_characters) list artist names needing cleaning. This step prevents potential duplicates due to unnecessary whitespace or inconsistent special characters, resulting in a cleaner dataset.
-
+#### We can see the outputs of print(whitespace_issues) and print(special_characters) list artist names needing cleaning. This step prevents potential duplicates due to unnecessary whitespace or inconsistent special characters, resulting in a cleaner dataset.
 
 
-
-
-
-
-### Identifying Duplicated Artist Names
-
-
+### 1.6.2 Identifying Duplicated Artist Names
 
 ```{r}
-
 # Identify duplicated artist names after cleaning
 duplicate_artists <- spotify_data$artistName[duplicated(spotify_data$artistName)]
 
@@ -186,14 +149,7 @@ print(duplicate_artists)
 
 ```
 
-
-
-
-
-
-### Display Unique Artist Names
-
-
+### 1.6.3 Display Unique Artist Names: 
 
 ```{r}
 
@@ -203,14 +159,9 @@ print(unique_artists)
 
 ```
 
+##### Listing unique artist names helps verify that previous cleaning steps have standardized names and reduced redundancy. This step ensures each artist is represented consistently.
 
-#### Listing unique artist names helps verify that previous cleaning steps have standardized names and reduced redundancy. This step ensures each artist is represented consistently.
-
-
-
-### Replace Special Characters
-
-
+### 1.6.4 Replace Special Characters
 
 ```{r}
 # Replace special characters like $ with s (only if necessary)
@@ -219,14 +170,10 @@ spotify_data$artistName <- gsub("\\$", "s", spotify_data$artistName)
 
 ```
 
-#### gsub() replaces the dollar sign ($) with s in artistName, ensuring that names are consistent. Special characters can lead to additional, unnecessary levels in a categorical variable, so standardization is essential for accurate analysis.
+##### gsub() replaces the dollar sign ($) with s in artistName, ensuring that names are consistent. Special characters can lead to additional, unnecessary levels in a categorical variable, so standardization is essential for accurate analysis.
 
 
-
-
-### Convert Artist Names to Lowercase
-
-
+### 1.6.5 Convert Artist Names to Lowercase
 
 ```{r}
 # Convert artistName to lowercase
@@ -234,17 +181,11 @@ spotify_data$artistName <- tolower(spotify_data$artistName)
 
 ```
 
-#### This step converts all artistName entries to lowercase, ensuring that variations in capitalization do not result in duplicate levels within the categorical data.
+##### This step converts all artistName entries to lowercase, ensuring that variations in capitalization do not result in duplicate levels within the categorical data.
 
-
-
-
-### Removing Identical Rows
-
+### 1.6.6 Removing Identical Rows
 
 ```{r}
-
-
 # Load dplyr package
 library(dplyr)
 
@@ -255,12 +196,10 @@ spotify_data <- distinct(spotify_data)
 
 ```
 
-#### distinct() from the dplyr package removes rows that are entirely identical across all columns. This is especially useful in datasets where repeated entries do not add value and can skew results.
+##### distinct() from the dplyr package removes rows that are entirely identical across all columns. This is especially useful in datasets where repeated entries do not add value and can skew results.
 
 
-
-
-### Group Rare Artists 
+### 1.6.7 Group Rare Artists 
 
 ```{r}
 # Group artists with fewer than the threshold of entries into "Other"
@@ -269,17 +208,12 @@ artist_counts <- table(spotify_data$artistName)
 rare_artists <- names(artist_counts[artist_counts < threshold])
 spotify_data$artistName <- ifelse(spotify_data$artistName %in% rare_artists, "Other", spotify_data$artistName)
 
-
 ```
 
-#### This code groups artists with fewer than five occurrences as "Other," reducing the levels of artistName. This step improves model interpretability by focusing on more common categories, reducing noise from rarely observed artist names.
+##### This code groups artists with fewer than five occurrences as "Other," reducing the levels of artistName. This step improves model interpretability by focusing on more common categories, reducing noise from rarely observed artist names.
 
 
-
-
-### Convert Artist Names to Factor
-
-
+### 1.6.8 Convert Artist Names to Factor
 
 ```{r}
 # Convert artistName to a factor
@@ -287,15 +221,10 @@ spotify_data$artistName <- as.factor(spotify_data$artistName)
 
 ```
 
-#### Converting artistName to a factor makes it a categorical variable, which is required for certain types of analyses, such as regression models with categorical predictors. Factors allow for easier interpretation and analysis of categorical data.
-
-
-
-
+##### Converting artistName to a factor makes it a categorical variable, which is required for certain types of analyses, such as regression models with categorical predictors. Factors allow for easier interpretation and analysis of categorical data.
 
 
 ```{r}
-
 # Sample check for lowercase conversion
 head(spotify_data$artistName, 10)  # View the first 10 values
 
@@ -303,14 +232,9 @@ head(spotify_data$artistName, 10)  # View the first 10 values
 any(grepl("[A-Z]", spotify_data$artistName))
 
 ```
-#### This code checks the lowercase conversion by displaying a sample of the first 10 artist names. This quick visual inspection ensures that previously applied lowercase transformations are working as expected.
+##### This code checks the lowercase conversion by displaying a sample of the first 10 artist names. This quick visual inspection ensures that previously applied lowercase transformations are working as expected.
 
-#### Output Interpretation :- The sample output shows Other for less common artists grouped under the "Other" category. Confirming lowercase letters in this output helps verify consistent naming.
-
-
-
-
-
+##### Output Interpretation :- The sample output shows Other for less common artists grouped under the "Other" category. Confirming lowercase letters in this output helps verify consistent naming.
 
 
 ```{r}
@@ -324,13 +248,7 @@ any(grepl("[A-Z]", spotify_data$artistName))
 ```
 #### This code uses grepl() to identify any remaining uppercase letters. A TRUE output would indicate the presence of uppercase letters, suggesting that further cleaning is needed.
 
-#### Output Interpretation: Initially, if the output is TRUE, it shows that not all names were converted to lowercase. After running tolower() again, any(grepl("[A-Z]", spotify_data$artistName)) should output FALSE, confirming that all names are now lowercase.
-
-
-
-
-
-
+##### Output Interpretation: Initially, if the output is TRUE, it shows that not all names were converted to lowercase. After running tolower() again, any(grepl("[A-Z]", spotify_data$artistName)) should output FALSE, confirming that all names are now lowercase.
 
 
 ```{r}
@@ -342,28 +260,14 @@ sum(is.na(spotify_data))
 
 #### This section ensures that all artist names are indeed lowercase by running tolower() again and re-checking for uppercase letters. This final check confirms that artistName is consistently formatted.
 
-#### Output Interpretation: The expected output FALSE confirms that all uppercase letters are now converted, ensuring standardization.
-
-
-
-
-
-
-
+##### Output Interpretation: The expected output FALSE confirms that all uppercase letters are now converted, ensuring standardization.
 
 ```{r}
 # View the frequency distribution of artist names
 table(spotify_data$artistName)
 
-
 ```
-
 #### The table() function shows the frequency distribution of each artistName, allowing inspection of common and rare artist occurrences. This distribution is useful for verifying the effectiveness of grouping rare artists into "Other."
-
-
-
-
-
 
 
 ```{r}
@@ -377,131 +281,68 @@ levels(spotify_data$artistName)
 ```
 #### Converting artistName to a factor variable is essential for using it as a categorical predictor in models. The str() function displays the internal structure of artistName, confirming its categorical nature.
 
-#### Output Interpretation: The output shows that artistName is now a factor with 169 levels, confirming that rare artists have been grouped effectively, and the column is ready for use as a categorical predictor.
+##### Output Interpretation: The output shows that artistName is now a factor with 169 levels, confirming that rare artists have been grouped effectively, and the column is ready for use as a categorical predictor.
 
 
-#### This lists all levels (unique artist names and "Other") in artistName, ensuring clarity and consistency. This step verifies that levels are correctly defined, which is critical for accurate modeling of categorical data.
+##### This lists all levels (unique artist names and "Other") in artistName, ensuring clarity and consistency. This step verifies that levels are correctly defined, which is critical for accurate modeling of categorical data.
 
 
-
-
-
-
-## Lets clean Genre column :- 
-
+### 1.6.9 Lets clean Genre column :- 
 
 ```{r}
-
 head(spotify_data$genre)
 
 ```
 
-
-
-
-
-
 ```{r}
-
 unique(spotify_data$genre)
-
 
 ```
 
-
-
-
-
-
-
-
-
 ```{r}
-
 # Count missing values
 sum(is.na(spotify_data$genre) | spotify_data$genre == "")
-
-
 
 ```
 #### This counts entries in genre that are either missing (NA) or empty (""). Identifying such values helps determine how many genres need to be filled or standardized.
 
-#### Output Interpretation: The output shows the count of missing or empty values (e.g., 475), guiding the decision to replace these with a placeholder or remove them if needed.
-
-
-
+##### **Output Interpretation: The output shows the count of missing or empty values (e.g., 475), guiding the decision to replace these with a placeholder or remove them if needed.**
 
 
 ```{r}
-
 spotify_data$genre[spotify_data$genre == ""] <- "unknown"
-
 
 ```
 
 #### Replacing empty genre values with "unknown" prevents them from being mistaken for missing values, providing a clear placeholder. Converting all genre names to lowercase ensures consistency, especially if genre is used as a categorical variable.
 
 
-
-
-
-
 ```{r}
-
 spotify_data$genre <- tolower(spotify_data$genre)
-
 
 ```
 
 
-
-
-
-
 ```{r}
-
 genre_counts <- sort(table(spotify_data$genre), decreasing = TRUE)
 print(genre_counts)
-
 
 ```
 
 ####  This displays the frequency of each genre, helping identify the most common and rare genres, which informs decisions on grouping or standardizing certain categories.
 
-#### Output Interpretation: This table output allows inspection of genre popularity, highlighting genres that might need further standardization or consolidation.
-
-
-
-
-
-
-
-
-
+##### **Output Interpretation: This table output allows inspection of genre popularity, highlighting genres that might need further standardization or consolidation.**
 
 
 ```{r}
-
 # Replace empty strings and unknown genres with NA
 spotify_data$genre[spotify_data$genre == "" | spotify_data$genre == "unknown"] <- NA
 
-
 ```
-
 
 #### Converting "unknown" and empty genres back to NA clarifies that these entries are missing genre data, which could be handled accordingly in the analysis (e.g., by imputing or omitting).
 
-
-
-
-
-
-
-
-
-
 ```{r}
-
 # Define a mapping for genre standardization
 genre_mapping <- c(
     # General categories
@@ -613,20 +454,12 @@ genre_mapping <- c(
 
 ```
 
-
-
 ####  The genre_mapping dictionary maps specific genre variations to broader categories (e.g., mapping "alt z" to "alternative" or "bedroom r&b" to "r&b"). The recode() function uses this mapping to transform genre values, reducing the number of unique genres and standardizing categories for improved interpretability.
 
-#### Output Interpretation: After applying recode(), the unique genres in spotify_data$genre are consolidated, making it easier to analyze broader genre categories and ensuring that similar genres are grouped effectively.
-
-
-
-
-
+##### **Output Interpretation: After applying recode(), the unique genres in spotify_data$genre are consolidated, making it easier to analyze broader genre categories and ensuring that similar genres are grouped effectively.**
 
 
 ```{r}
-
 spotify_data$genre <- recode(spotify_data$genre, !!!genre_mapping)
 
 
@@ -635,29 +468,14 @@ spotify_data$genre <- recode(spotify_data$genre, !!!genre_mapping)
 ####  It uses the recode function to standardize genre names in spotify_data$genre based on a predefined dictionary, genre_mapping. This dictionary maps specific genre variations to broader, consistent categories (e.g., "alt z" to "alternative"). The !!! operator expands all key-value pairs in genre_mapping as arguments within recode, allowing for multiple replacements in a single line. This approach is efficient, readable, and easily modifiable, ensuring that similar genres are consolidated consistently under unified labels. This standardization simplifies analysis and improves interpretability, with a cleaner set of genre categories ready for modeling and reporting.
 
 
-
-
-
-
 ```{r}
-
 unique(spotify_data$genre)
-
-
 
 ```
 
 ####  Listing unique values in genre verifies that standardization was successful. This final check confirms that the genres are now consistent and aligned with broader categories, ready for use in analysis.
 
-
-
-
-
-
-
-
 ```{r}
-
 library(dplyr)
 
 #  Standardize Genre Names using case_when
@@ -728,11 +546,7 @@ print(unique_genres)
 ```
 #### The case_when() function standardizes genre names, mapping specific variations (e.g., "alt z" to "alternative") to broader categories. This consolidation reduces the complexity of genres, making analysis more interpretable by grouping similar genres together.
 
-#### Genres with fewer than 5 entries are grouped into "Other." This threshold reduces the number of unique categories, making it easier to interpret results by focusing on more common genres and reducing noise from rare categories.
-
-
-
-
+##### **Genres with fewer than 5 entries are grouped into "Other." This threshold reduces the number of unique categories, making it easier to interpret results by focusing on more common genres and reducing noise from rare categories.**
 
 
 ```{r}
@@ -751,36 +565,24 @@ print(unique_genres)
 
 
 ```
-#### Lowercasing ensures uniformity in genre values, preventing case-sensitive duplicates. Converting NA values to "other" provides a clear placeholder for missing genres, maintaining consistency across all entries.
+#### - Lowercasing ensures uniformity in genre values, preventing case-sensitive duplicates. Converting NA values to "other" provides a clear placeholder for missing genres, maintaining consistency across all entries.
 
-#### Capitalizing each genre’s first letter enhances readability, especially in visualizations and reports. This step is optional and purely for presentation.
+#### - Capitalizing each genre’s first letter enhances readability, especially in visualizations and reports. This step is optional and purely for presentation.
 
-#### Checking unique genres confirms that all values are standardized and consistent, with similar genres grouped effectively.
-
-
-
-
-
-
+#### - Checking unique genres confirms that all values are standardized and consistent, with similar genres grouped effectively.
 
 ```{r}
-
 # Check unique values in artistName
  unique(spotify_data$artistName)
 
 # Check unique values in genre
 unique(spotify_data$genre)
 
-
-
 ```
 
 
 
-
 ```{r}
-
-
 # Convert genre to a factor
 spotify_data$genre <- as.factor(spotify_data$genre)
 
@@ -788,28 +590,20 @@ spotify_data$genre <- as.factor(spotify_data$genre)
 str(spotify_data$genre)
 
 
-
 ```
 #### Converting genre to a factor prepares it for categorical analysis, making it easier to use in modeling and statistical tests. Factors improve efficiency in R and help avoid unintended behavior in models that expect categorical predictors.
 
-#### Output Interpretation: The str(spotify_data$genre) output shows genre as a factor with unique levels, verifying successful conversion and readiness for use in categorical analysis.
+##### **Output Interpretation: The str(spotify_data$genre) output shows genre as a factor with unique levels, verifying successful conversion and readiness for use in categorical analysis.**
 
 
-
-
-### Finally done with both categorical variables.So, I have saved this file in my directory :-  
+#### Finally done with both categorical variables. So, I have saved this file in my directory :-  
  
 ```{r}
 
 # Save the modified dataframe to a new CSV file
-#write.csv(spotify_data, "modified_spotify_data.csv", row.names = FALSE)
-
-
+write.csv(spotify_data, "modified_spotify_data.csv", row.names = FALSE)
 
 ```
-
-
-
 
 
 ```{r}

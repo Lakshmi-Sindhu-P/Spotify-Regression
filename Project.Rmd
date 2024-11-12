@@ -1,0 +1,463 @@
+---
+title: "SPOTIFY ATTRIBUTES REGRESSION PROJECT"
+author: "Kaustubh Dangche, Lakshmi Sindhu Pulugundla & Lasya Priya Thota"
+date: "2024-11-08"
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# **Project Objective and Overview**
+
+The objective of this project is to predict the **`msPlayed`** (playtime in milliseconds) of songs on **Spotify** based on various song attributes. These attributes include both **continuous** variables such as **danceability**, **energy**, **loudness**, and **tempo**, as well as **categorical** features like **genre** and **artistName**.
+
+The project’s core goal is to understand how different musical attributes influence the total playtime of songs and build a regression model to predict future playtime. The dataset includes a variety of song characteristics that provide insights into musical features, which can be useful for music industry professionals and data scientists alike.
+
+By the end of this project, the following objectives will be achieved:
+- Build a robust **regression model** to predict **`msPlayed`**.
+- Understand the significance of various musical features in predicting playtime.
+- Clean and preprocess the data, handling missing values, duplicates, and categorical features.
+- Perform **Exploratory Data Analysis (EDA)** to visualize trends and patterns in the data.
+
+---
+
+### **Focus of the Project**:
+
+- **Primary Application**: **Music Playtime Prediction**
+  - Predicting the playtime (`msPlayed`) based on the attributes of the song.
+  
+- **Core Model**: **Regression Model (Multiple Linear Regression / Polynomial Regression)**
+  - Using regression analysis to model the relationship between song attributes and playtime.
+
+---
+
+### **Phase-Wise Project Flow**
+
+#### **Phase 1: Data Preprocessing & Basic Data Understanding**
+
+1. **Data Loading and Initial Exploration**  
+   - Loading the Spotify Song Attributes dataset and inspecting its structure.
+   
+2. **Data Cleaning and Type Modification**  
+   - Converting columns into appropriate formats and removing redundant or irrelevant columns.
+   
+3. **Handling Missing Values and Checking for Duplicates**  
+   - Ensuring no missing values or duplicate records exist.
+   
+4. **Outlier Detection and Handling**  
+   - Identifying and addressing any extreme outliers in key features.
+
+5. **Feature Scaling**  
+   - Standardizing and normalizing continuous features, making them suitable for regression modeling.
+
+---
+
+#### **Phase 2: Exploratory Data Analysis (EDA)**
+
+1. **Visualizing Distribution of Attributes**  
+   - Visualizing how each feature, especially continuous variables like `danceability`, `energy`, and `msPlayed`, is distributed.
+
+2. **Exploring Relationships Between Features**  
+   - Using scatter plots, correlation matrices, and other visual tools to explore relationships between the features and `msPlayed`.
+
+---
+
+#### **Phase 3: Feature Engineering & Extraction**
+
+1. **Handling Categorical Data**  
+   - Converting categorical variables like `genre` and `artistName` into factors, and preparing them for model fitting.
+
+2. **Creating New Features**  
+   - Deriving new features from the existing ones to enhance the predictive power of the model.
+
+---
+
+#### **Phase 4: Model Building**
+
+1. **Model Selection (Linear/Multiple Regression)**  
+   - Selecting a suitable regression model to predict `msPlayed`.
+
+2. **Model Evaluation**  
+   - Evaluating the model performance using metrics such as R-squared, RMSE, and residual plots.
+
+---
+
+#### **Phase 5: Post-Modeling Analysis**
+
+1. **Model Refinement**  
+   - Making improvements to the model based on diagnostic tests and evaluation metrics.
+
+---
+
+#### **Phase 6: Conclusion and Future Enhancements**
+
+1. **Summarizing Findings**  
+   - Discussing the effectiveness of the regression model and the insights gained.
+
+2. **Future Work**  
+   - Suggesting improvements, such as trying more complex models (e.g., Random Forest, Gradient Boosting), or exploring additional features for better predictions.
+
+---
+
+# **1. Data Collection and Pre-Processing**
+
+## **1.1 Load the Necessary Libraries & Dataset**
+
+```{r}
+# Load necessary libraries
+library(dplyr)  # For data manipulation
+library(ggplot2)  # Optional, for visualization if needed
+
+# Load the Spotify attribute dataset
+data <- read.csv("Spotify_Song_Attributes.csv")
+# Create a copy of the spotify attribute dataset
+spotify_data <- data
+# View the first few rows to understand the structure
+head(spotify_data)
+```
+
+### **Inference**:
+The dataset is successfully loaded into R, and a copy (`spotify_data`) is created to preserve the original data. We can now inspect the first few rows to understand its structure.
+
+## **1.2 View Dataset Structure**
+
+```{r}
+# View the structure of the data
+str(spotify_data)
+```
+
+### **Inference**:
+The `str()` function provides a quick look at the internal structure of the dataset. We can check the data types (e.g., numeric, factor) of each column, which helps in deciding how to clean or transform the data.
+
+## **1.3 Summary of Each Column**
+
+```{r}
+# View a summary of each column (e.g., min, max, mean, etc.)
+summary(spotify_data)
+```
+
+### **Inference**:
+The summary statistics allow us to understand the distribution of each feature, including mean, min, max, and standard deviation. This is crucial for identifying outliers and deciding which variables require special treatment.
+
+## **1.4 Handling Missing Values**
+
+```{r}
+# Check for missing values in each column
+colSums(is.na(spotify_data))
+```
+
+#### **We can see**:
+1. **Columns with Zero Missing Values**: Columns like `trackName`, `artistName`, `msPlayed`, `genre`, `id`, `uri`, `track_href`, `analysis_url`, and `type` have no missing values, ensuring they are complete for analysis.
+2. **Columns with 550 Missing Values**: Columns such as `danceability`, `energy`, `key`, `loudness`, `mode`, `speechiness`, `acousticness`, `instrumentalness`, `liveness`, `valence`, `tempo`, `duration_ms`, and `time_signature` have significant missing values (550). This indicates a need to address these missing entries to ensure reliable analysis.
+
+### **1.4.1 Remove Missing Values**
+
+```{r}
+# Option 1: Remove rows with missing values (if they are few)
+spotify_data <- na.omit(spotify_data)
+```
+
+### **Inference**:
+Using `na.omit()` removes rows with missing data, leaving us with only complete observations. This is necessary for regression models, which cannot handle missing values.
+
+### **1.4.2 Check Missing Values After Removal**
+
+```{r}
+# Check for missing values in each column after applying na.omit function 
+colSums(is.na(spotify_data))
+```
+
+#### **All values being zero in the output confirms** that no missing data remains in the dataset. This clean dataset now contains only complete rows, ideal for accurate and consistent analysis.
+
+### **Just check missing values removed from structure data or not.**
+
+```{r}
+str(spotify_data)
+```
+
+## **1.5 Remove Unwanted Columns**
+
+```{r}
+# Load dplyr library
+library(dplyr)
+
+# Remove `trackName` along with other unnecessary columns
+spotify_data <- spotify_data %>% select(-id, -uri, -track_href, -analysis_url, -trackName, -type)
+```
+
+### **Statistical Reasoning for Dropping Variables:**
+- **`id`, `uri`, `track_href`, `analysis_url`, `trackName`, `type`**: These columns do not contribute to predicting `msPlayed`. They are either unique identifiers or non-informative for the analysis.
+
+```{r}
+# Check the specified columns have been removed or not
+str(spotify_data)
+```
+
+## **1.6 Data Cleaning**
+
+### **1.6.1 Check Whitespace in `artistName` Column**
+
+```{r}
+# Check for leading or trailing whitespace
+whitespace_issues <- spotify_data$artistName[grepl("^\\s|\\s$", spotify_data$artistName)]
+
+# Display entries with whitespace issues
+print(whitespace_issues)
+```
+
+### **Inference**:
+Whitespace in `artistName` can cause inconsistencies, so it is necessary to clean these entries.
+
+### **1.6.2 Identify Special Characters in `artistName`**
+
+```{r}
+# Identify special characters in artist names
+special_characters <- spotify_data$artistName[grepl("[^a-zA-Z0-9\\s]", spotify_data$artistName)]
+
+# Display total number of entries with special characters and the first 25 entries
+cat("Total number of ntries with Special Characters:", length(special_characters), "\n")
+head(special_characters, 25)
+```
+
+### **Inference**:
+Special characters in `artistName` can cause inconsistencies when grouping artists. Identifying these characters helps ensure that they are cleaned properly.
+
+### **1.6.3 Identifying Duplicated Artist Names**
+
+```{r}
+# Identify duplicated artist names after cleaning
+duplicate_artists <- spotify_data$artistName[duplicated(spotify_data$artistName)]
+
+# Display total number of duplicates and the first 10 duplicate entries
+cat("Total number of duplicates:", length(duplicate_artists), "\n")
+head(duplicate_artists, 10)
+```
+
+### **Inference**:
+This output shows the total number of duplicate artist names and the first 10 duplicates, helping confirm that duplicate names are properly handled.
+
+### **1.6.4 Replace Special Characters**
+
+```{r}
+# Replace special characters like $ with s (only if necessary)
+spotify_data$artistName <- gsub("\\$", "s", spotify_data$artistName)
+```
+
+### **Inference**:
+Replacing special characters ensures that `artistName` values are consistent, removing unwanted characters that may interfere with analysis.
+
+### **1.6.5 Convert Artist Names to Lowercase**
+
+```{r}
+# Convert artistName to lowercase
+spotify_data$artistName <- tolower(spotify_data$artistName)
+```
+
+### **Inference**:
+Lowercasing ensures that variations in capitalization are removed, making artist names uniform for analysis.
+
+### **1.6.6 Removing Identical Rows**
+
+```{r}
+# Removing rows that are identical across all columns
+spotify_data <- distinct(spotify_data)
+```
+
+### **Inference**:
+Removing identical rows ensures that only unique entries are retained, reducing redundancy in the dataset.
+
+### **1.6.7 Group Rare Artists into "Other"**
+
+```{r}
+# Group artists with fewer than the threshold of entries into "Other"
+threshold <- 5
+artist_counts <- table(spotify_data$artistName)
+rare_artists <- names(artist_counts[artist_counts < threshold])
+spotify_data$artistName <- ifelse(spotify_data$artistName %in% rare_artists, "Other", spotify_data$artistName)
+```
+
+### **Inference**:
+Grouping rare artists under the "Other" category reduces the number of unique categories, simplifying the model and making it easier to interpret.
+
+### **1.6.8 Convert Artist Names to Factor**
+
+```{r}
+# Convert artistName to a factor
+spotify_data$artistName <- as.factor(spotify_data$artistName)
+```
+
+### **Inference**:
+Converting `artistName` to a factor ensures that it is correctly handled as a categorical variable in regression modeling.
+
+---
+
+### **1.6.9 Let's Clean the Genre Column**
+
+```{r}
+# Checking the genre data
+head(spotify_data$genre)
+
+head(unique(spotify_data$genre), 25)
+```
+
+```{r}
+# Count missing values
+sum(is.na(spotify_data$genre) | spotify_data$genre == "")
+```
+
+#### **Output Interpretation**:  
+This output helps identify how many `genre` values are missing or empty, guiding further cleaning steps.
+
+```{r}
+# Replace empty genre values with "unknown"
+spotify_data$genre[spotify_data$genre == ""] <- "unknown"
+```
+
+#### **Inference**:
+Replacing empty genre values with "unknown" ensures that no missing data is mistakenly treated as an empty string.
+
+```{r}
+# Convert genre names to lowercase
+spotify_data$genre <- tolower(spotify_data$genre)
+```
+
+```{r}
+# Display the frequency of genres
+genre_counts <- sort(table(spotify_data$genre), decreasing = TRUE)
+print(genre_counts)
+```
+
+#### **Inference**:
+The frequency table provides insights into the distribution of genres, helping identify the most common and rare genres for possible standardization.
+
+```{r}
+# Replace empty strings and unknown genres with NA
+spotify_data$genre[spotify_data$genre == "" | spotify_data$genre == "unknown"] <- NA
+```
+
+```{r}
+# Define a mapping for genre standardization
+genre_mapping <- c(
+    # General categories
+    "alt z" = "alternative",
+    "art pop" = "alternative",
+    "alternative metal" = "alternative rock",
+    "modern alternative rock" = "alternative rock",
+    "alternative pop rock" = "alternative rock",
+    "alternative r&b" = "r&b",
+    "alternative dance" = "dance",
+    
+    # Lo-fi variations
+    "lo-fi sleep" = "lo-fi",
+    "lo-fi study" = "lo-fi",
+    "lo-fi chill" = "lo-fi",
+    "lo-fi beats" = "lo-fi",
+    "anime lo-fi" = "lo-fi",
+    "sad lo-fi" = "lo-fi",
+    
+    # Pop variations
+    "post-teen pop" = "pop",
+    "gen z singer-songwriter" = "pop",
+    "singer-songwriter pop" = "pop",
+    "viral pop" = "pop",
+    "bedroom pop" = "pop",
+    "pop soul" = "pop",
+    "alt pop" = "pop",
+    
+    # Hip hop variations
+    "atl hip hop" = "hip hop",
+    "traprun" = "trap",
+    "cloud rap" = "hip hop",
+    "emo rap" = "rap",
+    "sad rap" = "rap",
+    "brooklyn drill" = "drill",
+    "drift phonk" = "phonk",
+    "conscious hip hop" = "hip hop",
+    "canadian hip hop" = "hip hop",
+    "ohio hip hop" = "hip hop",
+    
+    # R&B variations
+    "dark r&b" = "r&b",
+    "bedroom r&b" = "r&b",
+    "chill r&b" = "r&b",
+    "indie r&b" = "r&b",
+    "pop r&b" = "r&b",
+    "uk contemporary r&b" = "r&b",
+    
+    # EDM and Dance variations
+    "dance pop" = "edm",
+    "bass house" = "edm",
+    "chillwave" = "edm",
+    "future bass" = "edm",
+    "edm" = "edm",
+    "house" = "edm",
+    "eurodance" = "edm",
+    "gaming edm" = "edm",
+    
+    # Classical variations
+    "baroque" = "classical",
+    "classical performance" = "classical",
+    "german soundtrack" = "classical",
+    "orchestral soundtrack" = "classical",
+    "baroque pop" = "classical",
+    
+    # Rock variations
+    "album rock" = "rock",
+    "blues rock" = "rock",
+    "indie rock" = "rock",
+    "modern rock" = "rock",
+    "hard rock" = "rock",
+    "garage rock" = "rock",
+    "grunge" = "rock",
+    "alternative rock" = "rock",
+    
+    # Indie variations
+    "indie pop" = "indie",
+    "indie poptimism" = "indie",
+    "indie folk" = "indie",
+    "indie electropop" = "indie",
+    "indie game soundtrack" = "indie",
+    "indie anthem-folk" = "indie",
+    "indie garage rock" = "indie",
+    
+    # Anime and J-Pop
+    "anime score" = "anime",
+    "anime rock" = "anime",
+    "anime phonk" = "anime",
+    "j-pop" = "japanese pop",
+    "japanese teen pop" = "japanese pop",
+    "japanese vgm" = "japanese pop",
+    
+    # Other Genre Variations
+    "pov: indie" = "indie",
+    "ambient guitar" = "ambient",
+    "ambient pop" = "ambient",
+    "aesthetic rap" = "rap",
+    "vapor twitch" = "vaporwave",
+    "vapor pop" = "vaporwave",
+    "brooklyn indie" = "indie",
+    "downtempo" = "ambient",
+    "chill phonk" = "phonk",
+    "melodic rap" = "rap",
+    "neo mellow" = "mellow",
+    "post-grunge" = "grunge",
+    "emo" = "rock"
+)
+
+# Standardize genres using the recode function
+spotify_data$genre <- recode(spotify_data$genre, !!!genre_mapping)
+
+# Check if the genre column was updated
+unique(spotify_data$genre)
+```
+
+#### **Inference**:
+This code standardizes the genre column using the mapping defined in `genre_mapping`. The genres are recoded into broader categories, and the final unique values are verified.
+
+---
