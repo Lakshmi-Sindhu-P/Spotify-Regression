@@ -3,10 +3,12 @@ title: "SPOTIFY ATTRIBUTES REGRESSION PROJECT"
 author: "Kaustubh Dangche, Lakshmi Sindhu Pulugundla & Lasya Priya Thota"
 date: "2024-11-08"
 output:
-  pdf_document:
-    latex_engine: xelatex
   html_document:
+    output_dir: outputs  # Specifies the outputs folder for HTML
     df_print: paged
+  pdf_document:
+    output_dir: outputs  # Specifies the outputs folder for PDF
+    latex_engine: xelatex
 ---
 
 ```{r setup, include=FALSE}
@@ -115,7 +117,7 @@ library(dplyr)  # For data manipulation
 library(ggplot2)  # Optional, for visualization if needed
 
 # Load the Spotify attribute dataset
-data <- read.csv("Spotify_Song_Attributes.csv")
+data <- read.csv("./data/Spotify_Song_Attributes.csv")
 # Create a copy of the spotify attribute dataset
 spotify_data <- data
 # View the first few rows to understand the structure
@@ -460,4 +462,10 @@ unique(spotify_data$genre)
 #### **Inference**:
 This code standardizes the genre column using the mapping defined in `genre_mapping`. The genres are recoded into broader categories, and the final unique values are verified.
 
----
+#### Finally done with both categorical variables. So, I have saved this file in my directory :-  
+ 
+```{r}
+# Save the modified dataframe to a new CSV file
+write.csv(spotify_data, "./data/modified_spotify_data.csv", row.names = FALSE)
+
+```
