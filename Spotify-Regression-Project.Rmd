@@ -4,16 +4,28 @@ author: "Kaustubh Dangche, Lakshmi Sindhu Pulugundla & Lasya Priya Thota"
 date: "2024-11-08"
 output:
   html_document:
-    output_dir: outputs  # Specifies the outputs folder for HTML
+    output_dir: ./outputs/Spotify-Regression-Project  # Specifies the outputs folder for HTML
     df_print: paged
   pdf_document:
-    output_dir: outputs  # Specifies the outputs folder for PDF
+    output_dir: ./outputs/Spotify-Regression-Project  # Specifies the outputs folder for PDF
     latex_engine: xelatex
 ---
 
+
 ```{r setup, include=FALSE}
+# Set the working directory to the directory where the .Rmd file is located
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+# Check if outputs folder exists, if not create it
+if (!dir.exists("./outputs/Spotify-Regression-Project")) {
+  dir.create("./outputs/Spotify-Regression-Project", recursive = TRUE)
+}
+
+# knitr settings
 knitr::opts_chunk$set(echo = TRUE)
+
 ```
+
 
 # **Project Objective and Overview**
 
@@ -344,119 +356,114 @@ spotify_data$genre[spotify_data$genre == "" | spotify_data$genre == "unknown"] <
 ```
 
 ```{r}
-# Define a mapping for genre standardization
+# Define a more comprehensive mapping for genre standardization
 genre_mapping <- c(
-    # General categories
-    "alt z" = "alternative",
-    "art pop" = "alternative",
-    "alternative metal" = "alternative rock",
-    "modern alternative rock" = "alternative rock",
-    "alternative pop rock" = "alternative rock",
-    "alternative r&b" = "r&b",
-    "alternative dance" = "dance",
+    # Standardizing popular genres
+    "alt z" = "alternative", 
+    "album rock" = "rock", 
+    "british orchestra" = "classical", 
+    "desi hip hop" = "hip hop", 
+    "bedroom r&b" = "r&b", 
+    "singer-songwriter pop" = "pop", 
+    "la pop" = "pop", 
+    "lo-fi chill" = "lo-fi", 
+    "orchestral soundtrack" = "classical", 
+    "comic" = "other", 
+    "alternative metal" = "metal", 
+    "deep underground hip hop" = "hip hop", 
+    "pop" = "pop", 
+    "classical" = "classical", 
+    "modern alternative rock" = "alternative", 
+    "scandipop" = "pop", 
+    "punjabi pop" = "pop", 
+    "folk-pop" = "folk", 
+    "acoustic pop" = "pop", 
+    "art pop" = "pop", 
+    "electronica" = "electronic", 
+    "dance pop" = "pop", 
+    "bedroom pop" = "pop", 
+    "chill r&b" = "r&b", 
+    "indian lo-fi" = "lo-fi", 
+    "instrumental post-rock" = "post-rock", 
+    "classic bollywood" = "bollywood", 
+    "afghan pop" = "pop", 
+    "classic rock" = "rock", 
+    "german soundtrack" = "classical", 
+    "anime lo-fi" = "lo-fi", 
+    "lo-fi study" = "lo-fi", 
+    "dark r&b" = "r&b", 
+    "modern indie pop" = "indie", 
+    "pop edm" = "edm", 
+    "uk contemporary r&b" = "r&b", 
+    "emo rap" = "hip hop", 
+    "classic pakistani pop" = "pop", 
+    "japanese chillhop" = "chillhop", 
+    "japanese vgm" = "vgm", 
+    "anime" = "other", 
+    "bhangra" = "indian", 
+    "afrobeats" = "afrobeat", 
+    "j-pop" = "asian pop", 
+    "k-pop" = "asian pop", 
     
-    # Lo-fi variations
-    "lo-fi sleep" = "lo-fi",
-    "lo-fi study" = "lo-fi",
-    "lo-fi chill" = "lo-fi",
-    "lo-fi beats" = "lo-fi",
-    "anime lo-fi" = "lo-fi",
-    "sad lo-fi" = "lo-fi",
-    
-    # Pop variations
-    "post-teen pop" = "pop",
-    "gen z singer-songwriter" = "pop",
-    "singer-songwriter pop" = "pop",
-    "viral pop" = "pop",
-    "bedroom pop" = "pop",
-    "pop soul" = "pop",
-    "alt pop" = "pop",
-    
-    # Hip hop variations
-    "atl hip hop" = "hip hop",
-    "traprun" = "trap",
-    "cloud rap" = "hip hop",
-    "emo rap" = "rap",
-    "sad rap" = "rap",
-    "brooklyn drill" = "drill",
-    "drift phonk" = "phonk",
-    "conscious hip hop" = "hip hop",
-    "canadian hip hop" = "hip hop",
-    "ohio hip hop" = "hip hop",
-    
-    # R&B variations
-    "dark r&b" = "r&b",
-    "bedroom r&b" = "r&b",
-    "chill r&b" = "r&b",
-    "indie r&b" = "r&b",
-    "pop r&b" = "r&b",
-    "uk contemporary r&b" = "r&b",
-    
-    # EDM and Dance variations
-    "dance pop" = "edm",
-    "bass house" = "edm",
-    "chillwave" = "edm",
-    "future bass" = "edm",
-    "edm" = "edm",
-    "house" = "edm",
-    "eurodance" = "edm",
-    "gaming edm" = "edm",
-    
-    # Classical variations
-    "baroque" = "classical",
-    "classical performance" = "classical",
-    "german soundtrack" = "classical",
-    "orchestral soundtrack" = "classical",
-    "baroque pop" = "classical",
-    
-    # Rock variations
-    "album rock" = "rock",
-    "blues rock" = "rock",
-    "indie rock" = "rock",
-    "modern rock" = "rock",
-    "hard rock" = "rock",
-    "garage rock" = "rock",
-    "grunge" = "rock",
-    "alternative rock" = "rock",
-    
-    # Indie variations
-    "indie pop" = "indie",
-    "indie poptimism" = "indie",
-    "indie folk" = "indie",
-    "indie electropop" = "indie",
-    "indie game soundtrack" = "indie",
-    "indie anthem-folk" = "indie",
-    "indie garage rock" = "indie",
-    
-    # Anime and J-Pop
-    "anime score" = "anime",
-    "anime rock" = "anime",
-    "anime phonk" = "anime",
-    "j-pop" = "japanese pop",
-    "japanese teen pop" = "japanese pop",
-    "japanese vgm" = "japanese pop",
-    
-    # Other Genre Variations
-    "pov: indie" = "indie",
-    "ambient guitar" = "ambient",
-    "ambient pop" = "ambient",
-    "aesthetic rap" = "rap",
-    "vapor twitch" = "vaporwave",
-    "vapor pop" = "vaporwave",
-    "brooklyn indie" = "indie",
-    "downtempo" = "ambient",
-    "chill phonk" = "phonk",
-    "melodic rap" = "rap",
-    "neo mellow" = "mellow",
-    "post-grunge" = "grunge",
-    "emo" = "rock"
+    # More specific mappings for sub-genres
+    "aggressive phonk" = "phonk",
+    "alabama indie" = "indie",
+    "ambient" = "ambient",
+    "alabama rap" = "rap",
+    "australian dance" = "dance",
+    "australian indie" = "indie",
+    "australian pop" = "pop",
+    "austindie" = "indie",
+    "bass trap" = "trap",
+    "bedroom soul" = "soul",
+    "big room" = "edm",
+    "brostep" = "brostep",
+    "calming instrumental" = "instrumental",
+    "chillhop" = "chillhop",
+    "chillstep" = "chillstep",
+    "complextro" = "electronic",
+    "contemporary country" = "country",
+    "country" = "country",
+    "deep tropical house" = "edm",
+    "desi pop" = "pop",
+    "detroit hip hop" = "hip hop",
+    "detroit indie" = "indie",
+    "disco" = "disco",
+    "electropop" = "electropop",
+    "electro house" = "edm",
+    "electronic" = "electronic",
+    "filmi" = "bollywood",
+    "future rock" = "rock",
+    "indietronica" = "indie",
+    "indie pop rap" = "indie rap",
+    "instrumental grime" = "grime",
+    "instrumental math rock" = "post-rock",
+    "j-pop boy group" = "j-pop",
+    "japanese old school hip hop" = "hip hop",
+    "k-pop girl group" = "k-pop",
+    "lo-fi brasileiro" = "lo-fi",
+    "lo-fi indie" = "lo-fi",
+    "lo-fi jazzhop" = "lo-fi",
+    "lo-fi latino" = "lo-fi",
+    "melodic dubstep" = "dubstep",
+    "metropopolis" = "electronic",
+    "phonk" = "phonk",
+    "pop edm" = "edm",
+    "pop folk" = "folk",
+    "rap rock" = "rap",
+    "reggaeton" = "reggaeton",
+    "soul" = "soul",
+    "trap" = "trap",
+    "vaporwave" = "vaporwave"
 )
 
-# Standardize genres using the recode function
+# Apply recode function for genre standardization
 spotify_data$genre <- recode(spotify_data$genre, !!!genre_mapping)
 
-# Check if the genre column was updated
-unique(spotify_data$genre)
+# Final verification of genres
+unique_genres <- unique(spotify_data$genre)
+print(unique_genres)
+
 ```
 
 #### **Inference**:
@@ -466,6 +473,6 @@ This code standardizes the genre column using the mapping defined in `genre_mapp
  
 ```{r}
 # Save the modified dataframe to a new CSV file
-write.csv(spotify_data, "./data/modified_spotify_data.csv", row.names = FALSE)
+write.csv(spotify_data, "./data/spotify_dataset_modified.csv", row.names = FALSE)
 
 ```
