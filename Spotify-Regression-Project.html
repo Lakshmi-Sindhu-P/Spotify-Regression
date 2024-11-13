@@ -2174,6 +2174,36 @@ spotify_data$artistName &lt;- as.factor(spotify_data$artistName)</code></pre>
 <h3><strong>Inference</strong>:</h3>
 <p>Converting <code>artistName</code> to a factor ensures that it is
 correctly handled as a categorical variable in regression modeling.</p>
+<pre class="r"><code># Sample check for lowercase conversion
+head(spotify_data$artistName, 10)  # View the first 10 values</code></pre>
+<pre><code>##  [1] nico collins Other        Other        Other        Other       
+##  [6] Other        Other        Other        Other        Other       
+## 169 Levels: 5 seconds of summer a.r. rahman aj mitchell ... zachary knowles</code></pre>
+<pre class="r"><code># Comprehensive check to identify any uppercase letters
+any(grepl(&quot;[A-Z]&quot;, spotify_data$artistName))</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+</div>
+<div id="inference-using-head-i-reviewed-the-first-ten-entries-in-artistname-to-get-a-quick-look-at-the-data-format.-then-with-anygrepla-z-i-conducted-a-thorough-scan-across-all-entries-to-identify-any-uppercase-letters.-the-result-1-true-shows-that-some-artist-names-contain-uppercase-letters-which-highlights-the-need-for-standardizing-the-case-for-consistency." class="section level3">
+<h3><strong>Inference</strong>: Using head(), I reviewed the first ten
+entries in artistName to get a quick look at the data format. Then, with
+any(grepl(“[A-Z]”, …)), I conducted a thorough scan across all entries
+to identify any uppercase letters. The result [1] TRUE shows that some
+artist names contain uppercase letters, which highlights the need for
+standardizing the case for consistency.</h3>
+<pre class="r"><code># Ensure all artist names are in lowercase
+spotify_data$artistName &lt;- tolower(spotify_data$artistName)
+
+# Re-run the check
+any(grepl(&quot;[A-Z]&quot;, spotify_data$artistName))</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+</div>
+<div id="inference-i-applied-the-tolower-function-to-convert-all-artist-names-to-lowercase-ensuring-a-uniform-format-throughout-the-dataset.-after-running-another-check-with-anygrepla-z-the-output-1-false-confirmed-that-no-uppercase-letters-remained.-this-standardization-minimizes-the-potential-for-discrepancies-in-data-analysis-due-to-inconsistent-capitalization." class="section level3">
+<h3><strong>Inference</strong>: I applied the tolower() function to
+convert all artist names to lowercase, ensuring a uniform format
+throughout the dataset. After running another check with
+any(grepl(“[A-Z]”, …)), the output [1] FALSE confirmed that no uppercase
+letters remained. This standardization minimizes the potential for
+discrepancies in data analysis due to inconsistent capitalization.</h3>
 <hr />
 </div>
 <div id="lets-clean-the-genre-column" class="section level3">
@@ -2182,7 +2212,8 @@ correctly handled as a categorical variable in regression modeling.</p>
 head(spotify_data$genre)</code></pre>
 <pre><code>## [1] &quot;&quot;                  &quot;british orchestra&quot; &quot;glitchcore&quot;       
 ## [4] &quot;experimental pop&quot;  &quot;album rock&quot;        &quot;alt z&quot;</code></pre>
-<pre class="r"><code>head(unique(spotify_data$genre), 25)</code></pre>
+<pre class="r"><code># Check first 25 unique values present in the genre column
+head(unique(spotify_data$genre), 25)</code></pre>
 <pre><code>##  [1] &quot;&quot;                         &quot;british orchestra&quot;       
 ##  [3] &quot;glitchcore&quot;               &quot;experimental pop&quot;        
 ##  [5] &quot;album rock&quot;               &quot;alt z&quot;                   
@@ -2747,7 +2778,7 @@ print(genre_counts)</code></pre>
 genres, helping identify the most common and rare genres for possible
 standardization.</p>
 <pre class="r"><code># Replace empty strings and unknown genres with NA
-spotify_data$genre[spotify_data$genre == &quot;&quot; | spotify_data$genre == &quot;unknown&quot;] &lt;- NA</code></pre>
+spotify_data$genre[spotify_data$genre == &quot;&quot; | spotify_data$genre == &quot;unknown&quot;] &lt;- &quot;Unspecified Genre&quot;</code></pre>
 <pre class="r"><code># Define a more comprehensive mapping for genre standardization
 genre_mapping &lt;- c(
     # Standardizing popular genres
@@ -2837,6 +2868,7 @@ genre_mapping &lt;- c(
     &quot;lo-fi indie&quot; = &quot;lo-fi&quot;,
     &quot;lo-fi jazzhop&quot; = &quot;lo-fi&quot;,
     &quot;lo-fi latino&quot; = &quot;lo-fi&quot;,
+    &quot;lo-fi sleep&quot; = &quot;lo-fi&quot;,
     &quot;melodic dubstep&quot; = &quot;dubstep&quot;,
     &quot;metropopolis&quot; = &quot;electronic&quot;,
     &quot;phonk&quot; = &quot;phonk&quot;,
@@ -2855,241 +2887,241 @@ spotify_data$genre &lt;- recode(spotify_data$genre, !!!genre_mapping)
 # Final verification of genres
 unique_genres &lt;- unique(spotify_data$genre)
 print(unique_genres)</code></pre>
-<pre><code>##   [1] NA                                &quot;classical&quot;                      
+<pre><code>##   [1] &quot;Unspecified Genre&quot;               &quot;classical&quot;                      
 ##   [3] &quot;glitchcore&quot;                      &quot;experimental pop&quot;               
 ##   [5] &quot;rock&quot;                            &quot;alternative&quot;                    
 ##   [7] &quot;guitar case&quot;                     &quot;cloud rap&quot;                      
 ##   [9] &quot;pop&quot;                             &quot;hip hop&quot;                        
-##  [11] &quot;lo-fi sleep&quot;                     &quot;country&quot;                        
-##  [13] &quot;r&amp;b&quot;                             &quot;lo-fi&quot;                          
-##  [15] &quot;other&quot;                           &quot;metal&quot;                          
-##  [17] &quot;brooklyn drill&quot;                  &quot;american orchestra&quot;             
-##  [19] &quot;indie&quot;                           &quot;stomp and holler&quot;               
-##  [21] &quot;anime score&quot;                     &quot;dfw rap&quot;                        
-##  [23] &quot;folk&quot;                            &quot;atl hip hop&quot;                    
-##  [25] &quot;bollywood&quot;                       &quot;vgm&quot;                            
-##  [27] &quot;sleep&quot;                           &quot;electronic&quot;                     
-##  [29] &quot;danish pop&quot;                      &quot;melodic rap&quot;                    
-##  [31] &quot;boy band&quot;                        &quot;solipsynthm&quot;                    
-##  [33] &quot;ambient guitar&quot;                  &quot;edm&quot;                            
-##  [35] &quot;bass house&quot;                      &quot;show tunes&quot;                     
-##  [37] &quot;chillwave&quot;                       &quot;post-teen pop&quot;                  
-##  [39] &quot;hollywood&quot;                       &quot;gen z singer-songwriter&quot;        
-##  [41] &quot;post-rock&quot;                       &quot;baroque pop&quot;                    
-##  [43] &quot;canadian contemporary r&amp;b&quot;       &quot;phonk&quot;                          
-##  [45] &quot;hindi indie&quot;                     &quot;himachali pop&quot;                  
-##  [47] &quot;odia bhajan&quot;                     &quot;chutney&quot;                        
-##  [49] &quot;shanty&quot;                          &quot;chill pop&quot;                      
-##  [51] &quot;glam rock&quot;                       &quot;brostep&quot;                        
-##  [53] &quot;disco&quot;                           &quot;channel pop&quot;                    
-##  [55] &quot;british singer-songwriter&quot;       &quot;asian pop&quot;                      
-##  [57] &quot;melodic drill&quot;                   &quot;easy listening&quot;                 
-##  [59] &quot;dance&quot;                           &quot;hip pop&quot;                        
-##  [61] &quot;dutch house&quot;                     &quot;pop soul&quot;                       
-##  [63] &quot;canadian electronic&quot;             &quot;video game music&quot;               
-##  [65] &quot;eurodance&quot;                       &quot;irish pop&quot;                      
-##  [67] &quot;candy pop&quot;                       &quot;viral pop&quot;                      
-##  [69] &quot;indie rap&quot;                       &quot;neo soul&quot;                       
-##  [71] &quot;chillhop&quot;                        &quot;japanese dub&quot;                   
-##  [73] &quot;electra&quot;                         &quot;social media pop&quot;               
-##  [75] &quot;indian&quot;                          &quot;afrobeat&quot;                       
-##  [77] &quot;gregorian dance&quot;                 &quot;electropop&quot;                     
-##  [79] &quot;modern rock&quot;                     &quot;korean r&amp;b&quot;                     
-##  [81] &quot;ambient folk&quot;                    &quot;europop&quot;                        
-##  [83] &quot;pov: indie&quot;                      &quot;dutch edm&quot;                      
-##  [85] &quot;indian indie&quot;                    &quot;glitch hop&quot;                     
-##  [87] &quot;canadian pop&quot;                    &quot;icelandic indie&quot;                
-##  [89] &quot;ambient pop&quot;                     &quot;piano rock&quot;                     
-##  [91] &quot;dutch pop&quot;                       &quot;chill phonk&quot;                    
-##  [93] &quot;shimmer pop&quot;                     &quot;italian indie pop&quot;              
-##  [95] &quot;indie anthem-folk&quot;               &quot;soul&quot;                           
-##  [97] &quot;dancefloor dnb&quot;                  &quot;nordic house&quot;                   
-##  [99] &quot;pakistani pop&quot;                   &quot;new french touch&quot;               
-## [101] &quot;pop rap&quot;                         &quot;vapor twitch&quot;                   
-## [103] &quot;traprun&quot;                         &quot;drift phonk&quot;                    
-## [105] &quot;dark trap&quot;                       &quot;josei rap&quot;                      
-## [107] &quot;super eurobeat&quot;                  &quot;stutter house&quot;                  
-## [109] &quot;sad lo-fi&quot;                       &quot;australian rock&quot;                
-## [111] &quot;uk dance&quot;                        &quot;conscious hip hop&quot;              
-## [113] &quot;minneapolis indie&quot;               &quot;afrofuturism&quot;                   
-## [115] &quot;britcore&quot;                        &quot;french hip hop&quot;                 
-## [117] &quot;leeds indie&quot;                     &quot;minimal tech house&quot;             
-## [119] &quot;chill out&quot;                       &quot;denpa-kei&quot;                      
-## [121] &quot;gaming edm&quot;                      &quot;brazilian house&quot;                
-## [123] &quot;hands up&quot;                        &quot;trap&quot;                           
-## [125] &quot;nu disco&quot;                        &quot;chamber pop&quot;                    
-## [127] &quot;aussietronica&quot;                   &quot;mandopop&quot;                       
-## [129] &quot;indie rock italiano&quot;             &quot;alternative r&amp;b&quot;                
-## [131] &quot;blues rock&quot;                      &quot;alaska indie&quot;                   
-## [133] &quot;estonian electronic&quot;             &quot;alternative rock&quot;               
-## [135] &quot;bossbeat&quot;                        &quot;romanian pop&quot;                   
-## [137] &quot;lo-fi beats&quot;                     &quot;antiviral pop&quot;                  
-## [139] &quot;belgian edm&quot;                     &quot;baroque&quot;                        
-## [141] &quot;indie game soundtrack&quot;           &quot;irish rock&quot;                     
-## [143] &quot;modern alternative pop&quot;          &quot;japanese alternative pop&quot;       
-## [145] &quot;indie pop&quot;                       &quot;rage rap&quot;                       
-## [147] &quot;nyc pop&quot;                         &quot;hyperpop&quot;                       
-## [149] &quot;grime&quot;                           &quot;russian drain&quot;                  
-## [151] &quot;indie poptimism&quot;                 &quot;broadway&quot;                       
-## [153] &quot;singaporean pop&quot;                 &quot;j-poprock&quot;                      
-## [155] &quot;aesthetic rap&quot;                   &quot;canadian hip hop&quot;               
-## [157] &quot;alternative hip hop&quot;             &quot;british indie rock&quot;             
-## [159] &quot;turkish edm&quot;                     &quot;sad rap&quot;                        
-## [161] &quot;nightcore&quot;                       &quot;classic texas country&quot;          
-## [163] &quot;ukrainian viral pop&quot;             &quot;indie electropop&quot;               
-## [165] &quot;abstract beats&quot;                  &quot;indonesian r&amp;b&quot;                 
-## [167] &quot;ohio hip hop&quot;                    &quot;sped up&quot;                        
-## [169] &quot;chicago rap&quot;                     &quot;pittsburgh rap&quot;                 
-## [171] &quot;lo-fi cover&quot;                     &quot;colombian pop&quot;                  
-## [173] &quot;french pop&quot;                      &quot;focus beats&quot;                    
-## [175] &quot;gym phonk&quot;                       &quot;nuevo folklore mexicano&quot;        
-## [177] &quot;hard bass&quot;                       &quot;russian pop&quot;                    
-## [179] &quot;israeli mediterranean&quot;           &quot;israeli pop&quot;                    
-## [181] &quot;thai indie rock&quot;                 &quot;j-rock&quot;                         
-## [183] &quot;japanese dance pop&quot;              &quot;chinese viral pop&quot;              
-## [185] &quot;japanese teen pop&quot;               &quot;japanese alternative rock&quot;      
-## [187] &quot;anime rock&quot;                      &quot;uk pop&quot;                         
-## [189] &quot;alternative dance&quot;               &quot;chillstep&quot;                      
-## [191] &quot;modern indie folk&quot;               &quot;chanson&quot;                        
-## [193] &quot;bubblegum dance&quot;                 &quot;death metal&quot;                    
-## [195] &quot;vocal trance&quot;                    &quot;neo mellow&quot;                     
-## [197] &quot;german dance&quot;                    &quot;indie rock&quot;                     
-## [199] &quot;indie rockism&quot;                   &quot;dubstep&quot;                        
-## [201] &quot;swedish singer-songwriter&quot;       &quot;persian pop&quot;                    
-## [203] &quot;ccm&quot;                             &quot;meme&quot;                           
-## [205] &quot;funk carioca&quot;                    &quot;trap queen&quot;                     
-## [207] &quot;future bass&quot;                     &quot;downtempo&quot;                      
-## [209] &quot;norwegian pop&quot;                   &quot;swiss pop&quot;                      
-## [211] &quot;slowed and reverb&quot;               &quot;east coast hip hop&quot;             
-## [213] &quot;meme rap&quot;                        &quot;indiecoustica&quot;                  
-## [215] &quot;chamber psych&quot;                   &quot;g funk&quot;                         
-## [217] &quot;gauze pop&quot;                       &quot;k-rap&quot;                          
-## [219] &quot;new wave pop&quot;                    &quot;finnish alternative rock&quot;       
-## [221] &quot;instrumental&quot;                    &quot;nashville indie&quot;                
-## [223] &quot;house&quot;                           &quot;australian electropop&quot;          
-## [225] &quot;chill house&quot;                     &quot;pixel&quot;                          
-## [227] &quot;ann arbor indie&quot;                 &quot;bhojpuri pop&quot;                   
-## [229] &quot;reggae fusion&quot;                   &quot;folktronica&quot;                    
-## [231] &quot;teen pop&quot;                        &quot;otacore&quot;                        
-## [233] &quot;grunge&quot;                          &quot;native american&quot;                
-## [235] &quot;rap&quot;                             &quot;belgian dance&quot;                  
-## [237] &quot;latin hip hop&quot;                   &quot;industrial pop&quot;                 
-## [239] &quot;swedish pop&quot;                     &quot;german pop&quot;                     
-## [241] &quot;cleveland indie&quot;                 &quot;slap house&quot;                     
-## [243] &quot;jazz cover&quot;                      &quot;wave&quot;                           
-## [245] &quot;funk metal&quot;                      &quot;new england americana&quot;          
-## [247] &quot;indie viet&quot;                      &quot;bc underground hip hop&quot;         
-## [249] &quot;virginia indie&quot;                  &quot;chicago house&quot;                  
-## [251] &quot;newfoundland indie&quot;              &quot;austin rock&quot;                    
-## [253] &quot;canadian old school hip hop&quot;     &quot;epicore&quot;                        
-## [255] &quot;british soul&quot;                    &quot;indie r&amp;b&quot;                      
-## [257] &quot;eurobeat&quot;                        &quot;latin pop&quot;                      
-## [259] &quot;chiptune&quot;                        &quot;melodic metalcore&quot;              
-## [261] &quot;viral rap&quot;                       &quot;belgian pop&quot;                    
-## [263] &quot;dreamo&quot;                          &quot;shimmer psych&quot;                  
-## [265] &quot;dutch indie&quot;                     &quot;garage rock&quot;                    
-## [267] &quot;pop dance&quot;                       &quot;a cappella&quot;                     
-## [269] &quot;garage rock revival&quot;             &quot;pakistani hip hop&quot;              
-## [271] &quot;brooklyn indie&quot;                  &quot;covertronica&quot;                   
-## [273] &quot;australian r&amp;b&quot;                  &quot;hopebeat&quot;                       
-## [275] &quot;canadian celtic&quot;                 &quot;lo-fi product&quot;                  
-## [277] &quot;british soundtrack&quot;              &quot;italian library music&quot;          
-## [279] &quot;australian psych&quot;                &quot;new romantic&quot;                   
-## [281] &quot;alternative pop rock&quot;            &quot;reggaeton&quot;                      
-## [283] &quot;hard rock&quot;                       &quot;compositional ambient&quot;          
-## [285] &quot;anime phonk&quot;                     &quot;classic progressive house&quot;      
-## [287] &quot;bow pop&quot;                         &quot;indonesian singer-songwriter&quot;   
-## [289] &quot;indie soul&quot;                      &quot;christian alternative rock&quot;     
-## [291] &quot;indie garage rock&quot;               &quot;adult standards&quot;                
-## [293] &quot;chinese electropop&quot;              &quot;memphis hip hop&quot;                
-## [295] &quot;brazilian edm&quot;                   &quot;acoustic opm&quot;                   
-## [297] &quot;armenian hip hop&quot;                &quot;j-idol&quot;                         
-## [299] &quot;children&#39;s folk&quot;                 &quot;lgbtq+ hip hop&quot;                 
-## [301] &quot;celtic rock&quot;                     &quot;scorecore&quot;                      
-## [303] &quot;la indie&quot;                        &quot;electro&quot;                        
-## [305] &quot;anime latino&quot;                    &quot;j-acoustic&quot;                     
-## [307] &quot;swedish electropop&quot;              &quot;canadian singer-songwriter&quot;     
-## [309] &quot;uk alternative hip hop&quot;          &quot;pop r&amp;b&quot;                        
-## [311] &quot;classic country pop&quot;             &quot;escape room&quot;                    
-## [313] &quot;speedrun&quot;                        &quot;arab trap&quot;                      
-## [315] &quot;uk hip hop&quot;                      &quot;indie folk&quot;                     
-## [317] &quot;cantopop&quot;                        &quot;classic swedish pop&quot;            
-## [319] &quot;dark plugg&quot;                      &quot;glitch&quot;                         
-## [321] &quot;tempe indie&quot;                     &quot;anthem worship&quot;                 
-## [323] &quot;sleaze rock&quot;                     &quot;funk&quot;                           
-## [325] &quot;arkansas country&quot;                &quot;chinese idol pop&quot;               
-## [327] &quot;french shoegaze&quot;                 &quot;swiss indie&quot;                    
-## [329] &quot;weirdcore&quot;                       &quot;liquid funk&quot;                    
-## [331] &quot;odia pop&quot;                        &quot;noise pop&quot;                      
-## [333] &quot;blues&quot;                           &quot;oxford indie&quot;                   
-## [335] &quot;jazz rap&quot;                        &quot;soul jazz&quot;                      
-## [337] &quot;pinoy hip hop&quot;                   &quot;bhajan&quot;                         
-## [339] &quot;gujarati pop&quot;                    &quot;j-ambient&quot;                      
-## [341] &quot;hare krishna&quot;                    &quot;modern bollywood&quot;               
-## [343] &quot;erhu&quot;                            &quot;fingerstyle&quot;                    
-## [345] &quot;christian lo-fi&quot;                 &quot;musica indigena latinoamericana&quot;
-## [347] &quot;disco house&quot;                     &quot;modern folk rock&quot;               
-## [349] &quot;filter house&quot;                    &quot;hypnagogic pop&quot;                 
-## [351] &quot;german pop rock&quot;                 &quot;atmospheric dnb&quot;                
-## [353] &quot;dmv rap&quot;                         &quot;irish singer-songwriter&quot;        
-## [355] &quot;nightrun&quot;                        &quot;korean electropop&quot;              
-## [357] &quot;arab electronic&quot;                 &quot;dark clubbing&quot;                  
-## [359] &quot;glam metal&quot;                      &quot;korean pop&quot;                     
-## [361] &quot;classic soul&quot;                    &quot;pop quebecois&quot;                  
-## [363] &quot;belgian indie&quot;                   &quot;alternative americana&quot;          
-## [365] &quot;asian american hip hop&quot;          &quot;phonk brasileiro&quot;               
-## [367] &quot;nashville singer-songwriter&quot;     &quot;chill baile&quot;                    
-## [369] &quot;hi-nrg&quot;                          &quot;black americana&quot;                
-## [371] &quot;vapor pop&quot;                       &quot;french psychedelic&quot;             
-## [373] &quot;british alternative rock&quot;        &quot;japanese piano&quot;                 
-## [375] &quot;russian drill&quot;                   &quot;melbourne bounce international&quot; 
-## [377] &quot;indie emo&quot;                       &quot;cali rap&quot;                       
-## [379] &quot;chennai indie&quot;                   &quot;french indie pop&quot;               
-## [381] &quot;electro-pop francais&quot;            &quot;cinematic dubstep&quot;              
-## [383] &quot;lithuanian electronic&quot;           &quot;punjabi hip hop&quot;                
-## [385] &quot;diva house&quot;                      &quot;english indie rock&quot;             
-## [387] &quot;ambient lo-fi&quot;                   &quot;indonesian lo-fi pop&quot;           
-## [389] &quot;j-pop&quot;                           &quot;soundtrack&quot;                     
-## [391] &quot;persian electronic&quot;              &quot;christian rock&quot;                 
-## [393] &quot;boy pop&quot;                         &quot;wonky&quot;                          
-## [395] &quot;barbadian pop&quot;                   &quot;girl group&quot;                     
-## [397] &quot;ambient worship&quot;                 &quot;singaporean singer-songwriter&quot;  
-## [399] &quot;ballet class&quot;                    &quot;florida drill&quot;                  
-## [401] &quot;trip hop&quot;                        &quot;canadian latin&quot;                 
-## [403] &quot;g-house&quot;                         &quot;telugu indie&quot;                   
-## [405] &quot;lilith&quot;                          &quot;malaysian pop&quot;                  
-## [407] &quot;brazilian bass&quot;                  &quot;cincinnati indie&quot;               
-## [409] &quot;nz hip hop&quot;                      &quot;south african pop&quot;              
-## [411] &quot;australian hip hop&quot;              &quot;neon pop punk&quot;                  
-## [413] &quot;manitoba indie&quot;                  &quot;classic bhangra&quot;                
-## [415] &quot;abstract&quot;                        &quot;hmong pop&quot;                      
-## [417] &quot;city pop&quot;                        &quot;kazakh pop&quot;                     
-## [419] &quot;cedm&quot;                            &quot;freeform hardcore&quot;              
-## [421] &quot;contemporary r&amp;b&quot;                &quot;norwegian house&quot;                
-## [423] &quot;danish electronic&quot;               &quot;post-grunge&quot;                    
-## [425] &quot;belgian rock&quot;                    &quot;ethereal wave&quot;                  
-## [427] &quot;cumbia&quot;                          &quot;dark pop&quot;                       
-## [429] &quot;cyberpunk&quot;                       &quot;musica portuguesa contemporanea&quot;
-## [431] &quot;classic uk pop&quot;                  &quot;classical performance&quot;          
-## [433] &quot;plugg&quot;                           &quot;anime piano&quot;                    
-## [435] &quot;nz pop&quot;                          &quot;dance rock&quot;                     
-## [437] &quot;chicago indie&quot;                   &quot;modern dream pop&quot;               
-## [439] &quot;american modern classical&quot;       &quot;gambian hip hop&quot;                
-## [441] &quot;tech house&quot;                      &quot;pluggnb&quot;                        
-## [443] &quot;emo&quot;                             &quot;hawaiian hip hop&quot;               
-## [445] &quot;hungarian classical performance&quot; &quot;argentine ambient&quot;              
-## [447] &quot;gangster rap&quot;                    &quot;metallic hardcore&quot;              
-## [449] &quot;british modern classical&quot;        &quot;brighton indie&quot;                 
-## [451] &quot;danish electropop&quot;               &quot;chinese classical performance&quot;  
-## [453] &quot;australian singer-songwriter&quot;    &quot;pakistani electronic&quot;           
-## [455] &quot;christian hip hop&quot;               &quot;toronto indie&quot;                  
-## [457] &quot;lo-fi rap&quot;                       &quot;melodipop&quot;                      
-## [459] &quot;new jersey indie&quot;                &quot;k-pop&quot;                          
-## [461] &quot;scottish indie&quot;                  &quot;permanent wave&quot;                 
-## [463] &quot;abstract hip hop&quot;                &quot;electroclash&quot;                   
-## [465] &quot;hawaiian&quot;                        &quot;game mood&quot;                      
-## [467] &quot;nyc rap&quot;                         &quot;j-pop girl group&quot;               
-## [469] &quot;assamese pop&quot;                    &quot;australian alternative pop&quot;</code></pre>
+##  [11] &quot;lo-fi&quot;                           &quot;country&quot;                        
+##  [13] &quot;r&amp;b&quot;                             &quot;other&quot;                          
+##  [15] &quot;metal&quot;                           &quot;brooklyn drill&quot;                 
+##  [17] &quot;american orchestra&quot;              &quot;indie&quot;                          
+##  [19] &quot;stomp and holler&quot;                &quot;anime score&quot;                    
+##  [21] &quot;dfw rap&quot;                         &quot;folk&quot;                           
+##  [23] &quot;atl hip hop&quot;                     &quot;bollywood&quot;                      
+##  [25] &quot;vgm&quot;                             &quot;sleep&quot;                          
+##  [27] &quot;electronic&quot;                      &quot;danish pop&quot;                     
+##  [29] &quot;melodic rap&quot;                     &quot;boy band&quot;                       
+##  [31] &quot;solipsynthm&quot;                     &quot;ambient guitar&quot;                 
+##  [33] &quot;edm&quot;                             &quot;bass house&quot;                     
+##  [35] &quot;show tunes&quot;                      &quot;chillwave&quot;                      
+##  [37] &quot;post-teen pop&quot;                   &quot;hollywood&quot;                      
+##  [39] &quot;gen z singer-songwriter&quot;         &quot;post-rock&quot;                      
+##  [41] &quot;baroque pop&quot;                     &quot;canadian contemporary r&amp;b&quot;      
+##  [43] &quot;phonk&quot;                           &quot;hindi indie&quot;                    
+##  [45] &quot;himachali pop&quot;                   &quot;odia bhajan&quot;                    
+##  [47] &quot;chutney&quot;                         &quot;shanty&quot;                         
+##  [49] &quot;chill pop&quot;                       &quot;glam rock&quot;                      
+##  [51] &quot;brostep&quot;                         &quot;disco&quot;                          
+##  [53] &quot;channel pop&quot;                     &quot;british singer-songwriter&quot;      
+##  [55] &quot;asian pop&quot;                       &quot;melodic drill&quot;                  
+##  [57] &quot;easy listening&quot;                  &quot;dance&quot;                          
+##  [59] &quot;hip pop&quot;                         &quot;dutch house&quot;                    
+##  [61] &quot;pop soul&quot;                        &quot;canadian electronic&quot;            
+##  [63] &quot;video game music&quot;                &quot;eurodance&quot;                      
+##  [65] &quot;irish pop&quot;                       &quot;candy pop&quot;                      
+##  [67] &quot;viral pop&quot;                       &quot;indie rap&quot;                      
+##  [69] &quot;neo soul&quot;                        &quot;chillhop&quot;                       
+##  [71] &quot;japanese dub&quot;                    &quot;electra&quot;                        
+##  [73] &quot;social media pop&quot;                &quot;indian&quot;                         
+##  [75] &quot;afrobeat&quot;                        &quot;gregorian dance&quot;                
+##  [77] &quot;electropop&quot;                      &quot;modern rock&quot;                    
+##  [79] &quot;korean r&amp;b&quot;                      &quot;ambient folk&quot;                   
+##  [81] &quot;europop&quot;                         &quot;pov: indie&quot;                     
+##  [83] &quot;dutch edm&quot;                       &quot;indian indie&quot;                   
+##  [85] &quot;glitch hop&quot;                      &quot;canadian pop&quot;                   
+##  [87] &quot;icelandic indie&quot;                 &quot;ambient pop&quot;                    
+##  [89] &quot;piano rock&quot;                      &quot;dutch pop&quot;                      
+##  [91] &quot;chill phonk&quot;                     &quot;shimmer pop&quot;                    
+##  [93] &quot;italian indie pop&quot;               &quot;indie anthem-folk&quot;              
+##  [95] &quot;soul&quot;                            &quot;dancefloor dnb&quot;                 
+##  [97] &quot;nordic house&quot;                    &quot;pakistani pop&quot;                  
+##  [99] &quot;new french touch&quot;                &quot;pop rap&quot;                        
+## [101] &quot;vapor twitch&quot;                    &quot;traprun&quot;                        
+## [103] &quot;drift phonk&quot;                     &quot;dark trap&quot;                      
+## [105] &quot;josei rap&quot;                       &quot;super eurobeat&quot;                 
+## [107] &quot;stutter house&quot;                   &quot;sad lo-fi&quot;                      
+## [109] &quot;australian rock&quot;                 &quot;uk dance&quot;                       
+## [111] &quot;conscious hip hop&quot;               &quot;minneapolis indie&quot;              
+## [113] &quot;afrofuturism&quot;                    &quot;britcore&quot;                       
+## [115] &quot;french hip hop&quot;                  &quot;leeds indie&quot;                    
+## [117] &quot;minimal tech house&quot;              &quot;chill out&quot;                      
+## [119] &quot;denpa-kei&quot;                       &quot;gaming edm&quot;                     
+## [121] &quot;brazilian house&quot;                 &quot;hands up&quot;                       
+## [123] &quot;trap&quot;                            &quot;nu disco&quot;                       
+## [125] &quot;chamber pop&quot;                     &quot;aussietronica&quot;                  
+## [127] &quot;mandopop&quot;                        &quot;indie rock italiano&quot;            
+## [129] &quot;alternative r&amp;b&quot;                 &quot;blues rock&quot;                     
+## [131] &quot;alaska indie&quot;                    &quot;estonian electronic&quot;            
+## [133] &quot;alternative rock&quot;                &quot;bossbeat&quot;                       
+## [135] &quot;romanian pop&quot;                    &quot;lo-fi beats&quot;                    
+## [137] &quot;antiviral pop&quot;                   &quot;belgian edm&quot;                    
+## [139] &quot;baroque&quot;                         &quot;indie game soundtrack&quot;          
+## [141] &quot;irish rock&quot;                      &quot;modern alternative pop&quot;         
+## [143] &quot;japanese alternative pop&quot;        &quot;indie pop&quot;                      
+## [145] &quot;rage rap&quot;                        &quot;nyc pop&quot;                        
+## [147] &quot;hyperpop&quot;                        &quot;grime&quot;                          
+## [149] &quot;russian drain&quot;                   &quot;indie poptimism&quot;                
+## [151] &quot;broadway&quot;                        &quot;singaporean pop&quot;                
+## [153] &quot;j-poprock&quot;                       &quot;aesthetic rap&quot;                  
+## [155] &quot;canadian hip hop&quot;                &quot;alternative hip hop&quot;            
+## [157] &quot;british indie rock&quot;              &quot;turkish edm&quot;                    
+## [159] &quot;sad rap&quot;                         &quot;nightcore&quot;                      
+## [161] &quot;classic texas country&quot;           &quot;ukrainian viral pop&quot;            
+## [163] &quot;indie electropop&quot;                &quot;abstract beats&quot;                 
+## [165] &quot;indonesian r&amp;b&quot;                  &quot;ohio hip hop&quot;                   
+## [167] &quot;sped up&quot;                         &quot;chicago rap&quot;                    
+## [169] &quot;pittsburgh rap&quot;                  &quot;lo-fi cover&quot;                    
+## [171] &quot;colombian pop&quot;                   &quot;french pop&quot;                     
+## [173] &quot;focus beats&quot;                     &quot;gym phonk&quot;                      
+## [175] &quot;nuevo folklore mexicano&quot;         &quot;hard bass&quot;                      
+## [177] &quot;russian pop&quot;                     &quot;israeli mediterranean&quot;          
+## [179] &quot;israeli pop&quot;                     &quot;thai indie rock&quot;                
+## [181] &quot;j-rock&quot;                          &quot;japanese dance pop&quot;             
+## [183] &quot;chinese viral pop&quot;               &quot;japanese teen pop&quot;              
+## [185] &quot;japanese alternative rock&quot;       &quot;anime rock&quot;                     
+## [187] &quot;uk pop&quot;                          &quot;alternative dance&quot;              
+## [189] &quot;chillstep&quot;                       &quot;modern indie folk&quot;              
+## [191] &quot;chanson&quot;                         &quot;bubblegum dance&quot;                
+## [193] &quot;death metal&quot;                     &quot;vocal trance&quot;                   
+## [195] &quot;neo mellow&quot;                      &quot;german dance&quot;                   
+## [197] &quot;indie rock&quot;                      &quot;indie rockism&quot;                  
+## [199] &quot;dubstep&quot;                         &quot;swedish singer-songwriter&quot;      
+## [201] &quot;persian pop&quot;                     &quot;ccm&quot;                            
+## [203] &quot;meme&quot;                            &quot;funk carioca&quot;                   
+## [205] &quot;trap queen&quot;                      &quot;future bass&quot;                    
+## [207] &quot;downtempo&quot;                       &quot;norwegian pop&quot;                  
+## [209] &quot;swiss pop&quot;                       &quot;slowed and reverb&quot;              
+## [211] &quot;east coast hip hop&quot;              &quot;meme rap&quot;                       
+## [213] &quot;indiecoustica&quot;                   &quot;chamber psych&quot;                  
+## [215] &quot;g funk&quot;                          &quot;gauze pop&quot;                      
+## [217] &quot;k-rap&quot;                           &quot;new wave pop&quot;                   
+## [219] &quot;finnish alternative rock&quot;        &quot;instrumental&quot;                   
+## [221] &quot;nashville indie&quot;                 &quot;house&quot;                          
+## [223] &quot;australian electropop&quot;           &quot;chill house&quot;                    
+## [225] &quot;pixel&quot;                           &quot;ann arbor indie&quot;                
+## [227] &quot;bhojpuri pop&quot;                    &quot;reggae fusion&quot;                  
+## [229] &quot;folktronica&quot;                     &quot;teen pop&quot;                       
+## [231] &quot;otacore&quot;                         &quot;grunge&quot;                         
+## [233] &quot;native american&quot;                 &quot;rap&quot;                            
+## [235] &quot;belgian dance&quot;                   &quot;latin hip hop&quot;                  
+## [237] &quot;industrial pop&quot;                  &quot;swedish pop&quot;                    
+## [239] &quot;german pop&quot;                      &quot;cleveland indie&quot;                
+## [241] &quot;slap house&quot;                      &quot;jazz cover&quot;                     
+## [243] &quot;wave&quot;                            &quot;funk metal&quot;                     
+## [245] &quot;new england americana&quot;           &quot;indie viet&quot;                     
+## [247] &quot;bc underground hip hop&quot;          &quot;virginia indie&quot;                 
+## [249] &quot;chicago house&quot;                   &quot;newfoundland indie&quot;             
+## [251] &quot;austin rock&quot;                     &quot;canadian old school hip hop&quot;    
+## [253] &quot;epicore&quot;                         &quot;british soul&quot;                   
+## [255] &quot;indie r&amp;b&quot;                       &quot;eurobeat&quot;                       
+## [257] &quot;latin pop&quot;                       &quot;chiptune&quot;                       
+## [259] &quot;melodic metalcore&quot;               &quot;viral rap&quot;                      
+## [261] &quot;belgian pop&quot;                     &quot;dreamo&quot;                         
+## [263] &quot;shimmer psych&quot;                   &quot;dutch indie&quot;                    
+## [265] &quot;garage rock&quot;                     &quot;pop dance&quot;                      
+## [267] &quot;a cappella&quot;                      &quot;garage rock revival&quot;            
+## [269] &quot;pakistani hip hop&quot;               &quot;brooklyn indie&quot;                 
+## [271] &quot;covertronica&quot;                    &quot;australian r&amp;b&quot;                 
+## [273] &quot;hopebeat&quot;                        &quot;canadian celtic&quot;                
+## [275] &quot;lo-fi product&quot;                   &quot;british soundtrack&quot;             
+## [277] &quot;italian library music&quot;           &quot;australian psych&quot;               
+## [279] &quot;new romantic&quot;                    &quot;alternative pop rock&quot;           
+## [281] &quot;reggaeton&quot;                       &quot;hard rock&quot;                      
+## [283] &quot;compositional ambient&quot;           &quot;anime phonk&quot;                    
+## [285] &quot;classic progressive house&quot;       &quot;bow pop&quot;                        
+## [287] &quot;indonesian singer-songwriter&quot;    &quot;indie soul&quot;                     
+## [289] &quot;christian alternative rock&quot;      &quot;indie garage rock&quot;              
+## [291] &quot;adult standards&quot;                 &quot;chinese electropop&quot;             
+## [293] &quot;memphis hip hop&quot;                 &quot;brazilian edm&quot;                  
+## [295] &quot;acoustic opm&quot;                    &quot;armenian hip hop&quot;               
+## [297] &quot;j-idol&quot;                          &quot;children&#39;s folk&quot;                
+## [299] &quot;lgbtq+ hip hop&quot;                  &quot;celtic rock&quot;                    
+## [301] &quot;scorecore&quot;                       &quot;la indie&quot;                       
+## [303] &quot;electro&quot;                         &quot;anime latino&quot;                   
+## [305] &quot;j-acoustic&quot;                      &quot;swedish electropop&quot;             
+## [307] &quot;canadian singer-songwriter&quot;      &quot;uk alternative hip hop&quot;         
+## [309] &quot;pop r&amp;b&quot;                         &quot;classic country pop&quot;            
+## [311] &quot;escape room&quot;                     &quot;speedrun&quot;                       
+## [313] &quot;arab trap&quot;                       &quot;uk hip hop&quot;                     
+## [315] &quot;indie folk&quot;                      &quot;cantopop&quot;                       
+## [317] &quot;classic swedish pop&quot;             &quot;dark plugg&quot;                     
+## [319] &quot;glitch&quot;                          &quot;tempe indie&quot;                    
+## [321] &quot;anthem worship&quot;                  &quot;sleaze rock&quot;                    
+## [323] &quot;funk&quot;                            &quot;arkansas country&quot;               
+## [325] &quot;chinese idol pop&quot;                &quot;french shoegaze&quot;                
+## [327] &quot;swiss indie&quot;                     &quot;weirdcore&quot;                      
+## [329] &quot;liquid funk&quot;                     &quot;odia pop&quot;                       
+## [331] &quot;noise pop&quot;                       &quot;blues&quot;                          
+## [333] &quot;oxford indie&quot;                    &quot;jazz rap&quot;                       
+## [335] &quot;soul jazz&quot;                       &quot;pinoy hip hop&quot;                  
+## [337] &quot;bhajan&quot;                          &quot;gujarati pop&quot;                   
+## [339] &quot;j-ambient&quot;                       &quot;hare krishna&quot;                   
+## [341] &quot;modern bollywood&quot;                &quot;erhu&quot;                           
+## [343] &quot;fingerstyle&quot;                     &quot;christian lo-fi&quot;                
+## [345] &quot;musica indigena latinoamericana&quot; &quot;disco house&quot;                    
+## [347] &quot;modern folk rock&quot;                &quot;filter house&quot;                   
+## [349] &quot;hypnagogic pop&quot;                  &quot;german pop rock&quot;                
+## [351] &quot;atmospheric dnb&quot;                 &quot;dmv rap&quot;                        
+## [353] &quot;irish singer-songwriter&quot;         &quot;nightrun&quot;                       
+## [355] &quot;korean electropop&quot;               &quot;arab electronic&quot;                
+## [357] &quot;dark clubbing&quot;                   &quot;glam metal&quot;                     
+## [359] &quot;korean pop&quot;                      &quot;classic soul&quot;                   
+## [361] &quot;pop quebecois&quot;                   &quot;belgian indie&quot;                  
+## [363] &quot;alternative americana&quot;           &quot;asian american hip hop&quot;         
+## [365] &quot;phonk brasileiro&quot;                &quot;nashville singer-songwriter&quot;    
+## [367] &quot;chill baile&quot;                     &quot;hi-nrg&quot;                         
+## [369] &quot;black americana&quot;                 &quot;vapor pop&quot;                      
+## [371] &quot;french psychedelic&quot;              &quot;british alternative rock&quot;       
+## [373] &quot;japanese piano&quot;                  &quot;russian drill&quot;                  
+## [375] &quot;melbourne bounce international&quot;  &quot;indie emo&quot;                      
+## [377] &quot;cali rap&quot;                        &quot;chennai indie&quot;                  
+## [379] &quot;french indie pop&quot;                &quot;electro-pop francais&quot;           
+## [381] &quot;cinematic dubstep&quot;               &quot;lithuanian electronic&quot;          
+## [383] &quot;punjabi hip hop&quot;                 &quot;diva house&quot;                     
+## [385] &quot;english indie rock&quot;              &quot;ambient lo-fi&quot;                  
+## [387] &quot;indonesian lo-fi pop&quot;            &quot;j-pop&quot;                          
+## [389] &quot;soundtrack&quot;                      &quot;persian electronic&quot;             
+## [391] &quot;christian rock&quot;                  &quot;boy pop&quot;                        
+## [393] &quot;wonky&quot;                           &quot;barbadian pop&quot;                  
+## [395] &quot;girl group&quot;                      &quot;ambient worship&quot;                
+## [397] &quot;singaporean singer-songwriter&quot;   &quot;ballet class&quot;                   
+## [399] &quot;florida drill&quot;                   &quot;trip hop&quot;                       
+## [401] &quot;canadian latin&quot;                  &quot;g-house&quot;                        
+## [403] &quot;telugu indie&quot;                    &quot;lilith&quot;                         
+## [405] &quot;malaysian pop&quot;                   &quot;brazilian bass&quot;                 
+## [407] &quot;cincinnati indie&quot;                &quot;nz hip hop&quot;                     
+## [409] &quot;south african pop&quot;               &quot;australian hip hop&quot;             
+## [411] &quot;neon pop punk&quot;                   &quot;manitoba indie&quot;                 
+## [413] &quot;classic bhangra&quot;                 &quot;abstract&quot;                       
+## [415] &quot;hmong pop&quot;                       &quot;city pop&quot;                       
+## [417] &quot;kazakh pop&quot;                      &quot;cedm&quot;                           
+## [419] &quot;freeform hardcore&quot;               &quot;contemporary r&amp;b&quot;               
+## [421] &quot;norwegian house&quot;                 &quot;danish electronic&quot;              
+## [423] &quot;post-grunge&quot;                     &quot;belgian rock&quot;                   
+## [425] &quot;ethereal wave&quot;                   &quot;cumbia&quot;                         
+## [427] &quot;dark pop&quot;                        &quot;cyberpunk&quot;                      
+## [429] &quot;musica portuguesa contemporanea&quot; &quot;classic uk pop&quot;                 
+## [431] &quot;classical performance&quot;           &quot;plugg&quot;                          
+## [433] &quot;anime piano&quot;                     &quot;nz pop&quot;                         
+## [435] &quot;dance rock&quot;                      &quot;chicago indie&quot;                  
+## [437] &quot;modern dream pop&quot;                &quot;american modern classical&quot;      
+## [439] &quot;gambian hip hop&quot;                 &quot;tech house&quot;                     
+## [441] &quot;pluggnb&quot;                         &quot;emo&quot;                            
+## [443] &quot;hawaiian hip hop&quot;                &quot;hungarian classical performance&quot;
+## [445] &quot;argentine ambient&quot;               &quot;gangster rap&quot;                   
+## [447] &quot;metallic hardcore&quot;               &quot;british modern classical&quot;       
+## [449] &quot;brighton indie&quot;                  &quot;danish electropop&quot;              
+## [451] &quot;chinese classical performance&quot;   &quot;australian singer-songwriter&quot;   
+## [453] &quot;pakistani electronic&quot;            &quot;christian hip hop&quot;              
+## [455] &quot;toronto indie&quot;                   &quot;lo-fi rap&quot;                      
+## [457] &quot;melodipop&quot;                       &quot;new jersey indie&quot;               
+## [459] &quot;k-pop&quot;                           &quot;scottish indie&quot;                 
+## [461] &quot;permanent wave&quot;                  &quot;abstract hip hop&quot;               
+## [463] &quot;electroclash&quot;                    &quot;hawaiian&quot;                       
+## [465] &quot;game mood&quot;                       &quot;nyc rap&quot;                        
+## [467] &quot;j-pop girl group&quot;                &quot;assamese pop&quot;                   
+## [469] &quot;australian alternative pop&quot;</code></pre>
 </div>
 <div id="inference-14" class="section level4">
 <h4><strong>Inference</strong>:</h4>
@@ -3101,7 +3133,7 @@ categories, and the final unique values are verified.</p>
 <h4>Finally done with both categorical variables. So, I have saved this
 file in my directory :-</h4>
 <pre class="r"><code># Save the modified dataframe to a new CSV file
-write.csv(spotify_data, &quot;./data/spotify_dataset_modified.csv&quot;, row.names = FALSE)</code></pre>
+write.csv(spotify_data, &quot;./data/spotify_dataset_updated.csv&quot;, row.names = FALSE)</code></pre>
 </div>
 </div>
 </div>

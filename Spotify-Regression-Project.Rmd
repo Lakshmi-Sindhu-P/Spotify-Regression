@@ -309,6 +309,32 @@ spotify_data$artistName <- as.factor(spotify_data$artistName)
 ### **Inference**:
 Converting `artistName` to a factor ensures that it is correctly handled as a categorical variable in regression modeling.
 
+```{r}
+# Sample check for lowercase conversion
+head(spotify_data$artistName, 10)  # View the first 10 values
+
+# Comprehensive check to identify any uppercase letters
+any(grepl("[A-Z]", spotify_data$artistName))
+
+```
+### **Inference**: Using head(), I reviewed the first ten entries in artistName to get a quick look at the data format. Then, with any(grepl("[A-Z]", ...)), I conducted a thorough scan across all entries to identify any uppercase letters. The result [1] TRUE shows that some artist names contain uppercase letters, which highlights the need for standardizing the case for consistency.
+
+
+
+```{r}
+# Ensure all artist names are in lowercase
+spotify_data$artistName <- tolower(spotify_data$artistName)
+
+# Re-run the check
+any(grepl("[A-Z]", spotify_data$artistName))
+
+
+```
+### **Inference**: I applied the tolower() function to convert all artist names to lowercase, ensuring a uniform format throughout the dataset. After running another check with any(grepl("[A-Z]", ...)), the output [1] FALSE confirmed that no uppercase letters remained. This standardization minimizes the potential for discrepancies in data analysis due to inconsistent capitalization.
+
+
+
+
 ---
 
 ### **1.6.9 Let's Clean the Genre Column**
@@ -317,8 +343,15 @@ Converting `artistName` to a factor ensures that it is correctly handled as a ca
 # Checking the genre data
 head(spotify_data$genre)
 
-head(unique(spotify_data$genre), 25)
 ```
+
+```{r}
+# Check first 25 unique values present in the genre column
+head(unique(spotify_data$genre), 25)
+
+```
+
+
 
 ```{r}
 # Count missing values
@@ -352,8 +385,9 @@ The frequency table provides insights into the distribution of genres, helping i
 
 ```{r}
 # Replace empty strings and unknown genres with NA
-spotify_data$genre[spotify_data$genre == "" | spotify_data$genre == "unknown"] <- NA
+spotify_data$genre[spotify_data$genre == "" | spotify_data$genre == "unknown"] <- "Unspecified Genre"
 ```
+
 
 ```{r}
 # Define a more comprehensive mapping for genre standardization
@@ -445,6 +479,7 @@ genre_mapping <- c(
     "lo-fi indie" = "lo-fi",
     "lo-fi jazzhop" = "lo-fi",
     "lo-fi latino" = "lo-fi",
+    "lo-fi sleep" = "lo-fi",
     "melodic dubstep" = "dubstep",
     "metropopolis" = "electronic",
     "phonk" = "phonk",
@@ -473,6 +508,6 @@ This code standardizes the genre column using the mapping defined in `genre_mapp
  
 ```{r}
 # Save the modified dataframe to a new CSV file
-write.csv(spotify_data, "./data/spotify_dataset_modified.csv", row.names = FALSE)
+write.csv(spotify_data, "./data/spotify_dataset_updated.csv", row.names = FALSE)
 
 ```
