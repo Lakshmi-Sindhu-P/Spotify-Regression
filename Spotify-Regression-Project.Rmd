@@ -13,14 +13,6 @@ output:
 
 
 ```{r setup, include=FALSE}
-# Set the working directory to the directory where the .Rmd file is located
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-
-# Check if outputs folder exists, if not create it
-if (!dir.exists("./outputs/Spotify-Regression-Project")) {
-  dir.create("./outputs/Spotify-Regression-Project", recursive = TRUE)
-}
-
 # knitr settings
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -34,6 +26,7 @@ The objective of this project is to predict the **`msPlayed`** (playtime in mill
 The project’s core goal is to understand how different musical attributes influence the total playtime of songs and build a regression model to predict future playtime. The dataset includes a variety of song characteristics that provide insights into musical features, which can be useful for music industry professionals and data scientists alike.
 
 By the end of this project, the following objectives will be achieved:
+
 - Build a robust **regression model** to predict **`msPlayed`**.
 - Understand the significance of various musical features in predicting playtime.
 - Clean and preprocess the data, handling missing values, duplicates, and categorical features.
@@ -333,8 +326,6 @@ any(grepl("[A-Z]", spotify_data$artistName))
 ### **Inference**: I applied the tolower() function to convert all artist names to lowercase, ensuring a uniform format throughout the dataset. After running another check with any(grepl("[A-Z]", ...)), the output [1] FALSE confirmed that no uppercase letters remained. This standardization minimizes the potential for discrepancies in data analysis due to inconsistent capitalization.
 
 
-
-
 ---
 
 ### **1.6.9 Let's Clean the Genre Column**
@@ -377,7 +368,8 @@ spotify_data$genre <- tolower(spotify_data$genre)
 ```{r}
 # Display the frequency of genres
 genre_counts <- sort(table(spotify_data$genre), decreasing = TRUE)
-print(genre_counts)
+head(genre_counts, 25)
+#print(genre_counts)
 ```
 
 #### **Inference**:
@@ -497,7 +489,8 @@ spotify_data$genre <- recode(spotify_data$genre, !!!genre_mapping)
 
 # Final verification of genres
 unique_genres <- unique(spotify_data$genre)
-print(unique_genres)
+head(unique_genres, 25)
+#print(unique_genres)
 
 ```
 
@@ -511,3 +504,15 @@ This code standardizes the genre column using the mapping defined in `genre_mapp
 write.csv(spotify_data, "./data/spotify_dataset_updated.csv", row.names = FALSE)
 
 ```
+
+## 1.7 Feature Scaling:
+## 1.8 Outliers Handling
+
+```{r}
+
+```
+
+===
+
+# **2. Exploratory Data Analysis (EDA)**
+

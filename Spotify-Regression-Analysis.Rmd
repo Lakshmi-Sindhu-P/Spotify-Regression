@@ -1,0 +1,1115 @@
+---
+title: "Regression Analysis on Spotify Song Attributes - MATH564"
+author: "Lakshmi Sindhu Pulugundla, Lasya Priya Thota, Kaustubh Dangche"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## **Introduction**
+
+**Problem Statement:**
+This analysis aims to understand the relationship between various song attributes and their total playback time (`msPlayed`) on Spotify. The objective is to identify which factors significantly influence playback duration and uncover patterns or trends in user engagement.
+
+**Project Goal:**
+To develop a regression model that predicts song playback time (`msPlayed`) based on:
+
+- **Continuous attributes** such as `danceability`, `energy`, and `tempo`.
+- **Categorical attributes** such as `genre` and `artistName`.
+
+**Expected Results/Outcomes:**
+
+- A regression model explaining significant variations in playback time.
+- Insights into how song attributes influence user engagement.
+- Identification and remediation of model issues to improve accuracy and reliability.
+
+**Dataset Overview:**
+The Spotify Song Attributes dataset includes 10,080 records with 22 variables describing various song features. Key attributes include:
+
+- **Response Variable:** `msPlayed` (total playback duration in milliseconds).
+- **Continuous Variables:** `danceability`, `energy`, `tempo`, `loudness`.
+- **Categorical Variables:** `genre`, `artistName`.
+
+Preprocessing and cleaning were required to handle missing values, inconsistencies, and outliers to ensure the quality of the insights and predictions.
+
+---
+
+## **Project Workflow**
+
+### **Part 1: Initial Analysis**
+This phase established the groundwork for model development, including data preparation, feature selection, model specification, and statistical analysis.
+
+---
+
+#### **Dataset Selection and Exploration**
+1. The Spotify dataset was chosen for its real-world relevance and inclusion of both continuous and categorical variables.
+2. **Response Variable:** `msPlayed`.
+3. **Predictors:**
+   - Continuous: `danceability`, `energy`, `tempo`.
+   - Categorical: `genre`, `artistName`.
+
+#### **Data Cleaning**
+1. **Handling missing values:**
+   - Missing values in `danceability`, `energy`, and `tempo` were imputed using KNN imputation to maintain data integrity.
+2. **Cleaning categorical variables:**
+   - `genre` and `artistName` were standardized (e.g., lowercase conversion, grouping rare categories as "Other").
+3. **Outlier handling:**
+   - Extreme values in continuous variables (`danceability`, `energy`, and `tempo`) were capped using the IQR method.
+4. **Normalization:**
+   - Continuous variables were scaled to a 0-1 range for comparability.
+
+#### **Model Specification**
+1. A multiple linear regression model was defined:
+   - **Response Variable:** `msPlayed`.
+   - **Predictors:** `danceability`, `energy`, `tempo`, `genre`, and `artistName`.
+2. The model was fitted, and overall significance was evaluated using \(F\)-statistics.
+
+#### **Statistical Significance and Interpretation**
+1. **Regression Coefficients:** Interpretation of predictors (significant and non-significant) was completed.
+2. **Goodness-of-Fit Metrics:** Model \(R^2 = 0.0841\) and Adjusted \(R^2 = 0.04247\) indicated room for improvement, highlighting the need for diagnostics and refinement.
+
+---
+
+### **Part 2: Regression Diagnostics**
+This phase investigates model assumptions and identifies potential issues to address for improved reliability.
+
+---
+
+#### **Assumptions and Potential Issues**
+1. **Heteroscedasticity:** Diagnostic plots are being generated and analyzed.
+2. **Multicollinearity:** Variance Inflation Factor (VIF) is being assessed.
+3. **Influential Points:** Cook’s Distance and leverage values are being calculated.
+
+**Status:** Diagnostics are partially completed, with findings documented for heteroscedasticity and multicollinearity. Influential point analysis is in progress.
+
+---
+
+### **Part 3: Remediation and Refinement**
+This phase addresses issues identified in the diagnostic phase.
+
+---
+
+#### **Remediation**
+1. **Proposed Remediation Techniques:**
+   - Logarithmic transformations for heteroscedasticity.
+   - Weighted Least Squares to address unequal variance.
+   - Polynomial or interaction terms for non-linear relationships.
+   - Adjusting for influential points based on diagnostics.
+
+2. **Re-fitting and Comparison:**
+   - The model will be refitted after applying remediation techniques, with improvements and limitations documented.
+
+---
+
+### **Summary and Findings**
+This final phase summarizes the analysis, discussing key findings, diagnostic issues, and the effectiveness of remediation techniques.
+
+ 
+---
+Let's Dive into the Implementation part now - 
+# **Part 1: Initial Analysis**
+## 1. Data Selection and Exploration - 
+We chose a realworld dataset containing both continuous and Categorical Variables. Now let's focus on Exploration for which we will first have to- 
+
+### **1.1 Load the necessary libraries and dataset:**
+```{r}
+# Load necessary libraries
+library(dplyr)  # For data manipulation
+library(ggplot2)  # Optional, for visualization if needed
+#install.packages("VIM") # KNN imputation
+library(VIM)
+library(corrplot)
+
+```
+
+```{r}
+# Load the Spotify attribute dataset
+data <- read.csv("./data/Spotify_Song_Attributes.csv")
+# Create a copy of the spotify attribute dataset
+spotify_data <- data
+# View the first few rows to understand the structure
+head(spotify_data)
+```
+
+#### **Inference**:
+The dataset is successfully loaded into R, and a copy (`spotify_data`) is created to preserve the original data. We can now inspect the first few rows to understand its structure.
+
+### **1.2 View Dataset Structure**
+```{r}
+# View the structure of the data
+str(spotify_data)
+```
+
+#### **Inference**:
+
+- The dataset contains **10,080 observations** and **22 variables**, including both continuous and categorical attributes.
+- Key continuous variables: `msPlayed`, `danceability`, `energy`, `tempo`, and `loudness`.
+- Key categorical variables: `genre` and `artistName`.
+- Some columns, such as `track_href`, `uri`, and `id`, are non-informative for analysis and can be removed.
+- Missing values are present in critical columns like `danceability`, `energy`, and `tempo` (550 rows each).
+- Data types are generally appropriate (e.g., numeric for continuous variables, character for categorical), but some categorical variables require standardization (e.g., `genre` and `artistName`).
+
+
+### **1.3 Statistical Summary of Each Column:**
+
+```{r}
+# View a summary of each column (e.g., min, max, mean, etc.)
+summary(spotify_data)
+```
+
+#### **Inference**:
+
+- **Response Variable (`msPlayed`)**:
+  - Highly variable, with values ranging from **0** to **158,367,130 ms**.
+  - Median playback time is **266,288 ms**, with a mean of approximately **1,519,657 ms**, suggesting potential outliers.
+
+- **Continuous Variables**:
+  - **`danceability`**, **`energy`**, and **`tempo`**:
+    - Distributions appear to range from minimal to maximum values, indicating diversity in song attributes.
+    - Missing values (550 rows) may affect modeling and require handling.
+  - **`loudness`**:
+    - Negative mean and median values indicate quieter tracks overall, with some louder tracks present.
+
+- **Categorical Variables**:
+  - **`genre`**:
+    - A mix of general and specific genres, with missing or empty values recorded.
+  - **`artistName`**:
+    - Significant variability, with some names potentially requiring standardization (e.g., handling special characters, whitespace).
+
+- **Other Observations**:
+  - Variables such as `id`, `uri`, and `track_href` are identifiers and do not contribute to the analysis.
+  - Columns like `type` are constant and can be excluded.
+
+With this understanding of the dataset's structure and attributes, the next step is to identify and select three continuous variables and two categorical variables that are most relevant for modeling. These selected predictors will form the foundation of our regression analysis, guiding feature engineering and model specification.
+
+### 1.4 Select 3 Continuous and 2 Categorical Variables:
+The selection of variables is a critical step in regression analysis, as it determines the predictors that will explain the variability in the response variable `(msPlayed)`. 
+
+For continuous variables - 
+
+  - Attributes with **high variability**.  
+  - Strong **relevance** to playback time.  
+  - Minimal **missing values**.
+
+For categorical variables - 
+
+  - Predictors with **sufficient representation** in the dataset.  
+  - Potential **influence** on playback time based on domain knowledge.
+  
+This approach should ensure that the model captures key **patterns** and **interactions** in the data effectively.
+
+
+
+#### 1.4.1 Selection of Variables
+Let's start with the Continuous Variables:
+```{r}
+# Response Variable
+response_variable <- "msPlayed"
+
+# Continuous Variables: Selecting based on variability and relevance
+
+# Checking summary statistics of numeric variables to identify candidates
+numeric_cols <- sapply(spotify_data, is.numeric)
+numeric_summary <- summary(spotify_data[, numeric_cols])
+
+# Displaying summary for analysis
+print(numeric_summary)
+
+```
+
+#### Selected Variables:
+From the dataset, the following continuous variables stand out for their relevance to playback duration:  
+1. **Danceability**: How suitable a track is for dancing, with values ranging from 0 to 0.9760 (Mean: 0.6025).  
+2. **Energy**: A measure of intensity and activity, ranging from 0.0011 to 0.9990 (Mean: 0.5635).  
+3. **Tempo**: The track’s pace in beats per minute, varying between 0 and 236.20 (Mean: 119.37).  
+
+#### Issues Identified:
+- **Missing Values**: All three variables have 550 missing values that must be addressed before analysis.  
+- **Outliers**: Extremely low values in `tempo` (Min: 0) and `energy` (Min: 0.0011) may indicate errors or unusual cases that need review.  
+- **Scaling**: These variables might require normalization to ensure they contribute equally to the regression model.  
+
+#### Inference:
+These continuous variables provide meaningful insights into track characteristics and their influence on playback duration. However, careful preprocessing is crucial to handle missing data and outliers effectively, ensuring the reliability of the analysis.
+
+With the continuous variables selected, the next step is to dive into the categorical variables, such as `genre` and `artistName`. These features can reveal trends and patterns that help explain playback duration from a categorical perspective. Let’s explore their potential.
+
+But before that, let's load the selected columns into a list
+```{r}
+continuous_variables <- c("danceability", "energy", "tempo")
+
+```
+
+Now, let's look into the Categorical Variables - 
+```{r}
+# Categorical Variables: Identifying based on frequency distribution and relevance
+# Analyzing the unique counts of categorical columns
+categorical_cols <- sapply(spotify_data, is.character)
+spotify_data %>%
+  select(which(categorical_cols)) %>%
+  summarise_all(~ length(unique(.)))
+
+# Suggested Categorical Variables (based on analysis)
+categorical_variables <- c("genre", "artistName")
+
+```
+
+#### Inference:
+The code analyzed the unique value counts of all categorical columns in the dataset to identify meaningful predictors. Among the categorical columns:
+- **`genre`** has 524 unique values, representing various music genres, making it a promising candidate for analysis.
+- **`artistName`** has 2,312 unique values, capturing a wide range of artists, which may provide insights into playback patterns.
+- Other columns such as **`type`**, **`id`**, **`uri`**, **`track_href`**, and **`analysis_url`** primarily contain identifiers or URLs with limited analytical relevance. These columns can be excluded from further analysis.
+
+This analysis confirms that **`genre`** and **`artistName`** are the most relevant categorical variables for inclusion in the regression model. Their diversity offers potential for capturing patterns in playback duration, provided these categories are effectively cleaned and standardized.
+
+
+Having identified **`danceability`**, **`energy`**, and **`tempo`** as the key continuous variables and **`genre`** and **`artistName`** as the critical categorical variables, the next step focuses on data cleaning. This involves handling missing values, addressing potential outliers, and standardizing categorical variables to ensure they are model-ready. Let’s proceed with preparing these variables for the regression analysis.
+
+
+## 2. Data Cleaning:
+### 2.1 Handling Missing Values
+**Identifyig Missing Values - **
+```{r}
+colSums(is.na(spotify_data))
+
+```
+**Observation:** Columns like `danceability`, `energy`, `tempo`, and others have 550 missing values, while some columns have no missing values.
+
+To handle the missing values, let's first try and analyse the missing value summary - 
+```{r}
+missing_summary <- colSums(is.na(spotify_data)) / nrow(spotify_data) * 100
+print(missing_summary)
+
+```
+
+Let's check for missing data patterns - 
+```{r}
+library(naniar)
+gg_miss_var(spotify_data)
+
+```
+
+#### Inference:
+Our selected continuous variables—**danceability**, **energy**, and **tempo**—each have around 550 missing values, accounting for about 5.5% of the dataset. Since these variables are central to our regression analysis, removing rows with missing values would significantly reduce our sample size, potentially affecting the model's reliability.
+
+To address this, we considered different imputation methods:
+- **Mean or Median Imputation** could fill the gaps but might distort the distribution, especially if the data is skewed.
+- **K-Nearest Neighbors (KNN) Imputation** leverages similar observations to predict missing values, which helps maintain relationships within the data.
+- **Regression-Based Imputation** and **Multiple Imputation** are alternatives, but they can add complexity without necessarily improving the outcome for our purposes.
+
+Given the balance between accuracy and practicality, **KNN imputation** is our chosen approach. It allows us to estimate missing values based on similarities in the dataset, preserving both data relationships and sample size for a more robust regression analysis.
+
+Let’s proceed with KNN imputation to handle the missing values in our continuous variables. 
+
+**KNN Imputation for Missing Values**:
+```{r}
+# Specify the continuous variables with missing values
+continuous_vars <- c("danceability", "energy", "tempo")
+
+# Perform KNN imputation on the dataset for the specified columns
+spotify_data_imputed <- kNN(spotify_data, variable = continuous_vars, k = 5)
+
+# Check if missing values are handled
+colSums(is.na(spotify_data_imputed))
+
+```
+
+```{r}
+# View the structure and summary after imputation
+str(spotify_data_imputed)
+summary(spotify_data_imputed[continuous_vars])
+
+```
+With the continuous variables (`danceability`, `energy`, `tempo`) and their missing values successfully handled using KNN imputation, we have ensured the dataset's integrity while maintaining its structure. Additionally, the inclusion of indicator columns (`danceability_imp`, `energy_imp`, `tempo_imp`) allows us to trace imputed values and assess their impact on the analysis. To streamline our upcoming regression analysis, we will now create a reduced dataset containing only the essential columns: the response variable (`msPlayed`), selected predictors (`danceability`, `energy`, `tempo`, `genre`, and `artistName`), imputation indicators, and the `trackName` for identification. This focused dataset will simplify further processing while retaining all critical information.
+
+#### Code to Create Reduced Dataset
+
+```{r}
+# Extract the required columns for analysis, including imputation indicators
+columns_needed <- c("trackName", "msPlayed", "danceability", "danceability_imp", "energy", "energy_imp", "tempo", "tempo_imp", "genre", "artistName")
+spotify_analysis_data <- spotify_data_imputed %>% select(all_of(columns_needed))
+
+# View the structure of the new dataset to confirm
+str(spotify_analysis_data)
+
+# Display the first few rows of the new dataset
+head(spotify_analysis_data)
+
+```
+
+1. **Selection of Essential Columns**: Includes the predictors, response variable, imputation indicators, and `trackName`.
+2. **Reduced Complexity**: Focuses on columns relevant to the regression analysis while excluding irrelevant or redundant columns.
+3. **Output**: Saves the reduced dataset to a CSV file for ease of access in subsequent steps.
+
+##### Key Observations:
+1. **Track Identifiers**: 
+   - `trackName`: This column contains the names of the tracks, which can serve as identifiers.
+   
+2. **Response Variable**:
+   - `msPlayed`: Represents the playback duration in milliseconds.
+
+3. **Continuous Predictors**:
+   - `danceability`, `energy`, `tempo`: Key features relevant to predicting playback time.
+   - Associated imputation flags (`danceability_imp`, `energy_imp`, `tempo_imp`) indicate whether these values were imputed during the data preparation process.
+
+4. **Categorical Predictors**:
+   - `genre` and `artistName`: These columns remain to be cleaned and standardized for use in the analysis.
+
+#### Next Steps:
+With the core columns identified, the focus now shifts to cleaning and standardizing the categorical columns (`genre` and `artistName`) and handling potential inconsistencies in `trackName`. Proper cleaning ensures consistency and reliability in the regression model.
+
+### 2.2 Categorical Column Cleaning and Standardization
+#### 2.2.1 Genre Column -
+The `genre` column, as one of the categorical variables in our dataset, represents the musical genre of tracks. However, it contains inconsistencies, missing values, and a wide variety of categories, some of which are rare. Cleaning and standardizing this column are critical to ensure it contributes meaningfully to the regression analysis. This involves addressing missing values, standardizing formats, grouping rare categories, and mapping values into broader, interpretable categories.
+
+We now proceed to implement the cleaning and standardization of the `genre` column.
+
+**Step 1: Handling Missing and Empty Values**
+Replacing empty or missing genres with a placeholder like "Unspecified Genre" to avoid data loss.
+
+```{r}
+# Replacing empty genre values with "Unspecified Genre"
+spotify_analysis_data$genre[spotify_analysis_data$genre == "" | is.na(spotify_analysis_data$genre)] <- "Unspecified Genre"
+```
+
+**Step 2: Standardizing Genre Names**
+Converting all genre names to lowercase for consistency.
+
+```{r}
+# Converting genre names to lowercase
+spotify_analysis_data$genre <- tolower(spotify_analysis_data$genre)
+```
+
+
+**Step 3: Analyzing Genre Frequencies**
+Checking the frequency of unique genres to identify rare categories for grouping.
+
+```{r}
+# Displaying the frequency of genres
+genre_counts <- sort(table(spotify_analysis_data$genre), decreasing = TRUE)
+head(genre_counts, 25)  # Display the top 25 genres
+```
+
+##### Inference:
+- **Unspecified Genre**:
+   - Observed 1,500 entries with "Unspecified Genre," indicating missing or unclear data that requires handling to avoid bias in the analysis.
+
+- **Dominant Genres**:
+   - Frequently occurring genres like "alt z" (656), "pop" (602), and "filmi" (412) dominate the dataset, highlighting their importance in analysis.
+
+- **Rare Genres**:
+   - Many genres, such as "baroque pop" (68) and "lo-fi chill" (70), have low representation, contributing to the long-tail distribution.
+
+- **Genre Imbalance**:
+   - The distribution of genres is imbalanced, with a few common categories and many rare ones, suggesting the need for grouping or consolidation.
+
+- **Impact on Analysis**:
+   - Cleaning and standardizing the genre column will ensure better interpretability, reduce sparsity, and improve the robustness of regression models by minimizing noise from rare categories.
+
+To address the challenges identified in the genre column—unspecified genres, rare categories, and imbalanced representation—we’ll map existing genres to broader, standardized categories. This step enhances interpretability, consolidates similar categories, and ensures meaningful patterns are captured in our analysis. Let’s proceed with implementing the genre mapping.
+
+**Step 4: Mapping Genres into Broader Categories**
+Using a predefined mapping to standardize genre values.
+
+```{r}
+genre_mapping <- c(
+    # Standardizing popular genres
+    "alt z" = "alternative", 
+    "album rock" = "rock", 
+    "british orchestra" = "classical", 
+    "desi hip hop" = "hip hop", 
+    "bedroom r&b" = "r&b", 
+    "singer-songwriter pop" = "pop", 
+    "la pop" = "pop", 
+    "lo-fi chill" = "lo-fi", 
+    "orchestral soundtrack" = "classical", 
+    "comic" = "other", 
+    "alternative metal" = "metal", 
+    "deep underground hip hop" = "hip hop", 
+    "pop" = "pop", 
+    "classical" = "classical", 
+    "modern alternative rock" = "alternative", 
+    "scandipop" = "pop", 
+    "punjabi pop" = "pop", 
+    "folk-pop" = "folk", 
+    "acoustic pop" = "pop", 
+    "art pop" = "pop", 
+    "electronica" = "electronic", 
+    "dance pop" = "pop", 
+    "bedroom pop" = "pop", 
+    "chill r&b" = "r&b", 
+    "indian lo-fi" = "lo-fi", 
+    "instrumental post-rock" = "post-rock", 
+    "classic bollywood" = "bollywood", 
+    "afghan pop" = "pop", 
+    "classic rock" = "rock", 
+    "german soundtrack" = "classical", 
+    "anime lo-fi" = "lo-fi", 
+    "lo-fi study" = "lo-fi", 
+    "dark r&b" = "r&b", 
+    "modern indie pop" = "indie", 
+    "pop edm" = "edm", 
+    "uk contemporary r&b" = "r&b", 
+    "emo rap" = "hip hop", 
+    "classic pakistani pop" = "pop", 
+    "japanese chillhop" = "chillhop", 
+    "japanese vgm" = "vgm", 
+    "anime" = "other", 
+    "bhangra" = "indian", 
+    "afrobeats" = "afrobeat", 
+    "j-pop" = "asian pop", 
+    "k-pop" = "asian pop", 
+    
+    # More specific mappings for sub-genres
+    "aggressive phonk" = "phonk",
+    "alabama indie" = "indie",
+    "ambient" = "ambient",
+    "alabama rap" = "rap",
+    "australian dance" = "dance",
+    "australian indie" = "indie",
+    "australian pop" = "pop",
+    "austindie" = "indie",
+    "bass trap" = "trap",
+    "bedroom soul" = "soul",
+    "big room" = "edm",
+    "brostep" = "brostep",
+    "calming instrumental" = "instrumental",
+    "chillhop" = "chillhop",
+    "chillstep" = "chillstep",
+    "complextro" = "electronic",
+    "contemporary country" = "country",
+    "country" = "country",
+    "deep tropical house" = "edm",
+    "desi pop" = "pop",
+    "detroit hip hop" = "hip hop",
+    "detroit indie" = "indie",
+    "disco" = "disco",
+    "electropop" = "electropop",
+    "electro house" = "edm",
+    "electronic" = "electronic",
+    "filmi" = "bollywood",
+    "future rock" = "rock",
+    "indietronica" = "indie",
+    "indie pop rap" = "indie rap",
+    "instrumental grime" = "grime",
+    "instrumental math rock" = "post-rock",
+    "j-pop boy group" = "j-pop",
+    "japanese old school hip hop" = "hip hop",
+    "k-pop girl group" = "k-pop",
+    "lo-fi brasileiro" = "lo-fi",
+    "lo-fi indie" = "lo-fi",
+    "lo-fi jazzhop" = "lo-fi",
+    "lo-fi latino" = "lo-fi",
+    "lo-fi sleep" = "lo-fi",
+    "melodic dubstep" = "dubstep",
+    "metropopolis" = "electronic",
+    "phonk" = "phonk",
+    "pop edm" = "edm",
+    "pop folk" = "folk",
+    "rap rock" = "rap",
+    "reggaeton" = "reggaeton",
+    "soul" = "soul",
+    "trap" = "trap",
+    "vaporwave" = "vaporwave"
+)
+
+# Applying mapping
+spotify_analysis_data$genre <- recode(spotify_analysis_data$genre, !!!genre_mapping)
+```
+
+To ensure the dataset remains focused on meaningful categories and avoids overcomplicating the analysis with rare genres, we now address infrequent genres by grouping them into a broader "Other" category. This step simplifies the genre distribution and strengthens the interpretability of our analysis. Let’s proceed with grouping these rare genres.
+
+**Step 5: Groupping Rare Categories**
+Combine rare genres into an "Other" category based on frequency.
+
+```{r}
+# Group genres with fewer than a threshold into "Other"
+threshold <- 50  # Define the threshold
+rare_genres <- names(genre_counts[genre_counts < threshold])
+spotify_analysis_data$genre <- ifelse(spotify_analysis_data$genre %in% rare_genres, "Other", spotify_analysis_data$genre)
+```
+
+
+**Step 6: Verify Cleaning**
+Checking the cleaned genre column for consistency.
+
+```{r}
+# Verify the updated genre column
+unique_genres <- unique(spotify_analysis_data$genre)
+print(unique_genres)
+```
+After verifying the cleaning process for the `genre` column, we noticed an unexpected overlap between categories like `"other"` and `"unspecified genre"`. Addressing these overlaps is essential to maintain consistency and avoid redundancy in our analysis. This step ensures that our categorical variable truly reflects distinct and meaningful groupings, paving the way for cleaner insights in the later stages.
+
+
+##### Resolving Overlaps in the Genre Column
+
+```{r}
+# Combine "other" and "unspecified genre" into a single category "Other"
+spotify_analysis_data$genre <- ifelse(
+  spotify_analysis_data$genre %in% c("other", "unspecified genre"), 
+  "Other", 
+  spotify_analysis_data$genre
+)
+
+# Reassess the updated genre distribution
+genre_counts_updated <- sort(table(spotify_analysis_data$genre), decreasing = TRUE)
+head(genre_counts_updated, 25)  # Display the top 25 genres
+```
+
+###### Inference: Managing the Large "Other" Category
+
+- **Observation**: A significant portion of songs (4,726 entries) fall under the `"Other"` category, highlighting potential overgeneralization of infrequent genres.
+- **Implications**:
+  - While simplifying the dataset, this grouping may obscure insights from rare genres that could influence playback time (`msPlayed`).
+  - Retaining more genre-specific details could enhance the interpretability and predictive power of the model.
+- **Action**:
+  - Refine the threshold for grouping into `"Other"`.
+  - Explore the distribution within `"Other"` to identify recurring patterns or clusters of genres that can be reclassified.
+  - Balance simplification with information retention for optimal model performance.
+
+To address the overgeneralization caused by the `"Other"` category, we can refine the threshold and explore patterns within the grouped entries. This step ensures a more meaningful representation of genre diversity in the dataset, improving the quality of subsequent analyses.
+
+Given the current project's focus and time constraints, we have decided to proceed with the current genre grouping without further refinement. Refining `"Other"` into more granular categories remains a potential improvement and will be included in the **Future Works** section. Now, we move on to cleaning and preparing the `artistName` column to ensure its consistency and usability in the analysis.
+
+#### 2.2.2 ArtistName Column:
+
+The `artistName` column is critical for identifying key patterns and trends related to song playback. Cleaning this column involves:
+
+1. **Removing whitespace**: Ensuring no leading or trailing spaces exist.
+2. **Handling special characters**: Standardizing entries with special characters.
+3. **Converting to lowercase**: Ensuring uniformity.
+4. **Grouping rare artists**: Combining less frequent artists into an `"Other"` category to reduce categorical complexity.
+
+
+**Step 1: Remove Whitespace**
+
+```{r}
+# Remove leading and trailing whitespace in artistName
+spotify_analysis_data$artistName <- trimws(spotify_analysis_data$artistName)
+
+# Check for whitespace issues after cleaning
+any(grepl("^\\s|\\s$", spotify_analysis_data$artistName))  # Should return FALSE
+```
+
+**Step 2: Handle Special Characters**
+
+```{r}
+# Identifying and display entries with special characters
+special_characters <- spotify_analysis_data$artistName[grepl("[^a-zA-Z0-9\\s]", spotify_analysis_data$artistName)]
+cat("Total entries with special characters:", length(special_characters), "\n")
+head(special_characters, 10)
+
+# Replacing specific special characters (e.g., "$" with "s")
+spotify_analysis_data$artistName <- gsub("\\$", "s", spotify_analysis_data$artistName)
+```
+
+**Step 3: Convert to Lowercase**
+
+```{r}
+# Converting artist names to lowercase for uniformity
+spotify_analysis_data$artistName <- tolower(spotify_analysis_data$artistName)
+
+# Verifying conversion
+any(grepl("[A-Z]", spotify_analysis_data$artistName))  # Should return FALSE
+```
+
+**Step 4: Group Rare Artists into "Other"**
+
+```{r}
+# Defining threshold for grouping rare artists
+artist_threshold <- 10  # Artists appearing fewer than this count will be grouped
+artist_counts <- table(spotify_analysis_data$artistName)
+rare_artists <- names(artist_counts[artist_counts < artist_threshold])
+
+# Group rare artists into "Other"
+spotify_analysis_data$artistName <- ifelse(spotify_analysis_data$artistName %in% rare_artists, "Other", spotify_analysis_data$artistName)
+
+# Verify distribution after grouping
+artist_counts_after <- table(spotify_analysis_data$artistName)
+head(sort(artist_counts_after, decreasing = TRUE), 20)  # Display top 20 artist counts
+```
+
+##### **Step 5: Convert to Factor**
+
+```{r}
+# Converting artistName to a factor for regression analysis
+spotify_analysis_data$artistName <- as.factor(spotify_analysis_data$artistName)
+
+# Verifying conversion
+str(spotify_analysis_data$artistName)
+```
+
+##### **Inference**
+- Whitespace and special characters are cleaned, ensuring consistent formatting.
+- Rare artists are grouped into an `"Other"` category, reducing the complexity of the categorical variable.
+- The column is now ready for analysis as a factor variable.
+
+
+With the `artistName` column successfully cleaned and prepared, we now focus on refining the continuous variables in our dataset. This involves addressing potential outliers to minimize their influence on regression models and standardizing these variables to ensure comparability. Let’s begin with **outlier handling** for `danceability`, `energy`, and `tempo`.
+
+### 2.3 Outlier Handling for Continuous Variables
+
+Outliers in `danceability`, `energy`, and `tempo` can significantly impact regression analysis, leading to biased or unreliable results. We’ll identify and handle these outliers using the **IQR method**.
+
+
+#### Step 1: Identifying Outliers
+```{r}
+# Define a function to identify outliers using the IQR method
+identify_outliers <- function(column) {
+  Q1 <- quantile(column, 0.25, na.rm = TRUE)  # 25th percentile
+  Q3 <- quantile(column, 0.75, na.rm = TRUE)  # 75th percentile
+  IQR <- Q3 - Q1                              # Interquartile range
+  lower_bound <- Q1 - 1.5 * IQR               # Lower bound
+  upper_bound <- Q3 + 1.5 * IQR               # Upper bound
+  list(lower = lower_bound, upper = upper_bound)
+}
+
+# Check outliers for continuous variables
+outlier_bounds <- lapply(spotify_analysis_data[, c("danceability", "energy", "tempo")], identify_outliers)
+
+# Print bounds
+print(outlier_bounds)
+```
+
+#### Interpretation:
+
+1. **Danceability**:
+   - **Lower threshold**: 0.2305
+   - **Upper threshold**: 0.9945
+   - **Outliers**: Any values below 0.2305 or above 0.9945 are considered potential outliers.
+
+2. **Energy**:
+   - **Lower threshold**: -0.23
+   - **Upper threshold**: 1.322
+   - **Outliers**: Any values below -0.23 or above 1.322 are considered potential outliers.
+
+3. **Tempo**:
+   - **Lower threshold**: 40.89775
+   - **Upper threshold**: 195.8918
+   - **Outliers**: Any values below 40.89775 or above 195.8918 are considered potential outliers.
+
+Let's now perform- **Visualization** of these outliers:
+   - Highlight outliers in the visualizations (boxplots).
+
+
+```{r}
+ggplot(spotify_analysis_data, aes(y = danceability)) +
+  geom_boxplot(fill = "skyblue") +
+  labs(title = "Boxplot of Danceability (Before Handling Outliers)", y = "Danceability")
+
+ggplot(spotify_analysis_data, aes(y = energy)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(title = "Boxplot of Energy (Before Handling Outliers)", y = "Energy")
+
+ggplot(spotify_analysis_data, aes(y = tempo)) +
+  geom_boxplot(fill = "coral") +
+  labs(title = "Boxplot of Tempo (Before Handling Outliers)", y = "Tempo")
+
+```
+
+#### Step 2: Handle Outliers
+Options for handling outliers include:
+- **Capping**: Replace outliers with the nearest acceptable value within the bounds.
+- **Removing**: Remove rows containing outliers.
+
+Here, we cap the outliers to ensure data retention.
+
+```{r}
+# Defining a function to calculate outlier bounds
+identify_outliers <- function(column) {
+  iqr <- IQR(column, na.rm = TRUE)
+  q1 <- quantile(column, 0.25, na.rm = TRUE)
+  q3 <- quantile(column, 0.75, na.rm = TRUE)
+  lower_bound <- q1 - 1.5 * iqr
+  upper_bound <- q3 + 1.5 * iqr
+  return(list(lower = lower_bound, upper = upper_bound))
+}
+
+# Defining a function to cap outliers
+cap_outliers <- function(column, bounds) {
+  column <- ifelse(column < bounds$lower, bounds$lower, column)
+  column <- ifelse(column > bounds$upper, bounds$upper, column)
+  return(column)
+}
+
+# Applying capping to the continuous variables
+for (col in c("danceability", "energy", "tempo")) {
+  # Calculate bounds
+  bounds <- identify_outliers(spotify_analysis_data[[col]])
+  
+  # Cap outliers
+  spotify_analysis_data[[col]] <- cap_outliers(spotify_analysis_data[[col]], bounds)
+}
+
+# Verifying outlier handling
+summary(spotify_analysis_data[, c("danceability", "energy", "tempo")])
+
+```
+Visualisation - 
+
+```{r}
+# Visualizing outliers before and after capping using boxplots
+par(mfrow = c(2, 3))  # Set layout for 3 variables before and after
+
+# Before Capping
+boxplot(data$danceability, main = "Danceability (Before)", ylab = "Values")
+boxplot(data$energy, main = "Energy (Before)", ylab = "Values")
+boxplot(data$tempo, main = "Tempo (Before)", ylab = "Values")
+
+# After Capping
+boxplot(spotify_analysis_data$danceability, main = "Danceability (After)", ylab = "Values")
+boxplot(spotify_analysis_data$energy, main = "Energy (After)", ylab = "Values")
+boxplot(spotify_analysis_data$tempo, main = "Tempo (After)", ylab = "Values")
+
+```
+#### **Inference on Outlier Handling**
+
+The outlier capping process successfully addressed extreme values in the **danceability** and **tempo** columns, leading to a more stable dataset for further analysis. This ensures that:
+- **Data retention** is maintained by keeping all observations while reducing the impact of outliers.
+- The **distribution** of these variables is now more consistent, minimizing the potential influence of extreme values on the model.
+- **Energy** had few initial outliers, so this variable’s distribution remains mostly unchanged, reflecting that the majority of values were within acceptable bounds.
+
+This step contributes to a cleaner dataset that’s better suited for regression analysis, as it reduces noise from extreme values that could skew insights and predictions.
+
+With outliers addressed, the next logical step is to **normalize the continuous variables**—such as **danceability**, **energy**, and **tempo**—to ensure they’re on a comparable scale. Normalization is important for regression analysis, as it allows each variable to contribute equally to the model without one variable disproportionately influencing the results due to its scale. 
+
+### 2.4 Normalization/ Scaling of Variables-
+To normalize the continuous variables, we'll scale them to a range between 0 and 1 using Min-Max normalization. Here’s the code to perform this step:
+
+```{r}
+# Define a function for Min-Max normalization
+normalize <- function(column) {
+  return((column - min(column)) / (max(column) - min(column)))
+}
+
+# Apply normalization to the continuous variables
+spotify_analysis_data$danceability <- normalize(spotify_analysis_data$danceability)
+spotify_analysis_data$energy <- normalize(spotify_analysis_data$energy)
+spotify_analysis_data$tempo <- normalize(spotify_analysis_data$tempo)
+
+# Verify normalization
+summary(spotify_analysis_data[, c("danceability", "energy", "tempo")])
+```
+
+##### **Inference After Normalization**
+ The normalization has been successfully applied to the continuous variables (`danceability`, `energy`, and `tempo`). Now, each of these variables is scaled between 0 and 1, as seen from the summary statistics. This transformation makes the dataset ready for further analysis, ensuring that the scales of these variables do not disproportionately influence the results.
+
+
+## 3.Exploratory Data Analysis (EDA)
+
+With the data now cleaned, normalized, and ready, we proceed to **Exploratory Data Analysis**. This phase focuses on uncovering patterns, relationships, and insights within the dataset that can inform our regression modeling. Specifically, we aim to:
+
+1. **Visualize Distributions**: Plot the distributions of continuous and categorical variables to understand their spread and identify potential anomalies or patterns.
+2. **Perform Correlation Analysis**: Explore relationships among continuous variables, with a focus on their impact on the response variable, `msPlayed`.
+3. **Analyze Categorical Variables**: Investigate the influence of categorical variables (`genre` and `artistName`) on `msPlayed`.
+4. **Bivariate Analysis**: Examine pairwise relationships between predictors and `msPlayed` using scatterplots and boxplots.
+
+### 3.1. Starting with Visualizing Distributions:
+We first visualize the distributions of the continuous variables (`msPlayed`, `danceability`, `energy`, `tempo`) to assess their spread and identify any potential skewness. Then, we analyze the categorical variables (`genre` and `artistName`) to understand their representation and significance in the dataset.
+
+
+#### 3.1.1 Continuous Variable Distributions:
+```{r}
+# Visualize distributions of continuous variables
+continuous_vars <- c("msPlayed", "danceability", "energy", "tempo")
+
+for (var in continuous_vars) {
+  print(
+    ggplot(spotify_analysis_data, aes_string(var)) +
+      geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+      ggtitle(paste("Distribution of", var)) +
+      xlab(var) +
+      ylab("Frequency") +
+      theme_minimal()
+  )
+}
+```
+
+##### Interpretation:
+- **`msPlayed`**: The distribution is right-skewed, suggesting most songs have shorter playback times, with a few high-duration outliers.
+- **`danceability`, `energy`, and `tempo`**: These variables display balanced distributions post-normalization, which makes them suitable for further analysis in relation to the response variable.
+
+With the continuous variable distributions examined, Let's now have a look at the Categorical Variable Distribution.
+we’ll then conduct correlation analysis to understand relationships among features and with `msPlayed`. This step will guide feature selection and help identify any multicollinearity issues for our regression model. 
+
+#### 3.1.2 Categorical Variable Distributions:
+```{r}
+# Genre Distribution
+ggplot(spotify_analysis_data, aes(x = genre)) +
+  geom_bar(fill = "lightcoral") +
+  xlab("Genre") +
+  ylab("Count") +
+  ggtitle("Distribution of Genres") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+```{r}
+# Convert artistName back to character to display names
+spotify_analysis_data$artistName <- as.character(spotify_analysis_data$artistName)
+
+# Filter for the top 10 artists by track count
+top_artists <- names(sort(table(spotify_analysis_data$artistName), decreasing = TRUE))[1:10]
+filtered_data <- spotify_analysis_data %>% filter(artistName %in% top_artists)
+
+# Plot Top 10 Artists by Track Count
+ggplot(filtered_data, aes(x = artistName)) +
+  geom_bar(fill = "lightblue") +
+  xlab("Artist") +
+  ylab("Count") +
+  ggtitle("Top 10 Artists by Track Count (Refined)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+It is evident that in our dataset, the **"Other"** category represents a large and diverse set of genres and artists that appear infrequently. While this grouping helped simplify initial processing, it may introduce unnecessary complexity in the analysis phase. By retaining only the most frequent genres and artists, we ensure:
+
+- **Focus on Significant Groups**: Analyzing the top genres and artists directly contributes to more targeted insights, as these groups are likely to have substantial representation and influence on the `msPlayed` variable.
+- **Reduced Noise**: The "Other" category can introduce noise, diluting patterns that might emerge more distinctly without it.
+- **Enhanced Interpretability**: Without the ambiguous "Other" category, our analysis can be more straightforward and insightful, focusing only on genres and artists with clearer identities.
+
+Therefore, we proceed by filtering out rows where `genre` or `artistName` is labeled as "Other."
+
+
+```{r}
+# Filter out rows where genre or artistName is "Other"
+spotify_analysis_data_filtered <- spotify_analysis_data %>%
+  filter(genre != "Other" & artistName != "Other")
+
+# Verify structure and dimensions of the filtered dataset
+str(spotify_analysis_data_filtered)
+summary(spotify_analysis_data_filtered)
+```
+
+With the dataset filtered to exclude the "Other" category, we can now proceed with updated visualizations and analyses to explore the refined distributions and correlations among our key variables. This approach allows us to observe clearer patterns and insights without the ambiguity introduced by the mixed "Other" category. 
+
+#### Updated Visualizations for Refined Categorical Distributions - 
+
+We will now generate updated visualizations to examine the distributions of `genre` and `artistName` in the filtered dataset. This will help confirm that the distributions are more meaningful and balanced for analysis.
+
+```{r}
+# Updated Genre Distribution after removing "Other"
+ggplot(spotify_analysis_data_filtered, aes(x = genre)) +
+  geom_bar(fill = "lightcoral") +
+  xlab("Genre") +
+  ylab("Count") +
+  ggtitle("Refined Distribution of Genres (Without 'Other')") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+In this refined genre distribution (excluding "Other"), we observe:
+
+- **Dominant Genres**: Pop and Phonk are the most represented, especially Phonk, suggesting a strong listener preference in the dataset.
+  
+- **Significant Counts**: Alternative and Bollywood also show substantial representation, hinting at their distinct listener base.
+
+- **Niche Genres**: Genres like Soul and Sad Lo-fi have lower counts, adding diversity but limiting broader insights for these categories.
+
+This distribution offers a clearer view without the "Other" category, allowing for more focused analysis. 
+
+```{r}
+# Updated Artist Distribution after removing "Other"
+# Filter for the top 10 artists by track count in the refined dataset
+top_artists_filtered <- names(sort(table(spotify_analysis_data_filtered$artistName), decreasing = TRUE))[1:10]
+filtered_data_artist <- spotify_analysis_data_filtered %>%
+  filter(artistName %in% top_artists_filtered)
+
+ggplot(filtered_data_artist, aes(x = artistName)) +
+  geom_bar(fill = "lightblue") +
+  xlab("Artist") +
+  ylab("Count") +
+  ggtitle("Top 10 Artists by Track Count (Refined, Without 'Other')") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+This refined distribution of the top 10 artists (excluding "Other") reveals:
+
+- **Most Popular Artist**: **Blackbear** leads significantly, followed by **Lauv** and **Linkin Park**, indicating these artists have a strong presence in the dataset.
+
+- **Consistent Representation**: The remaining artists, including **Sonu Nigam** and The **Neighbourhood**, display relatively balanced track counts, suggesting a diversified listener interest.
+
+This refined view removes ambiguity, allowing a clearer focus on individual artist impacts on playback trends. Next, we’ll proceed to **Correlation Analysis** to evaluate how artist popularity may influence `msPlayed`.
+
+### 3.2 Correlation Analysis
+#### 3.2.1 Distribution of categorical variables (genre and artistName)
+
+
+With the refined dataset ready, we can proceed to **Correlation Analysis**. This step will help us identify relationships among continuous variables, especially their influence on the response variable, `msPlayed`. We aim to understand which features have stronger linear relationships, which will be helpful for subsequent modeling steps.
+
+Let’s move to computing and visualizing the correlation matrix for the continuous variables, focusing on identifying any potential predictors for `msPlayed`.
+
+```{r}
+# Select continuous variables for correlation analysis
+continuous_data <- spotify_analysis_data_filtered %>% select(msPlayed, danceability, energy, tempo)
+
+# Calculate correlation matrix
+correlation_matrix <- cor(continuous_data, use = "complete.obs")
+
+# Plot the correlation matrix
+corrplot(correlation_matrix, method = "color", type = "upper", 
+         title = "Correlation Matrix of Continuous Variables",
+         tl.col = "black", tl.srt = 45)
+```
+
+##### Interpretation of Correlation Matrix
+
+The correlation matrix reveals:
+- **`msPlayed` Correlations**: `msPlayed` shows weak correlations with `danceability`, `energy`, and `tempo`, indicating these variables alone don’t strongly predict playback time.
+- **Inter-variable Relationships**: Moderate positive correlation exists between `danceability` and `energy`, while other pairs show low correlation, suggesting they vary independently.
+
+
+Given the weak continuous variable correlations, we’ll:
+1. **Examine Categorical Variables** (`genre` and `artistName`) to assess their impact on `msPlayed`.
+2. **Visualize Categorical Influence** with box plots to compare playback time distributions across genres and artists.
+
+#### 3.2.2 Playback Time Analysis by Genre and Artist
+With the insights gained from the correlation matrix of continuous variables, we’ll now explore the impact of categorical variables, specifically `genre` and `artistName`, on playback time (`msPlayed`). This step helps us assess whether these variables influence how long users listen to specific tracks, even if continuous predictors are weak.
+**Objective:** Use box plots to examine the influence of genre and artistName on msPlayed and identify patterns or outliers in listening duration.
+
+```{r}
+# Box Plot for `msPlayed` across different genres
+ggplot(spotify_analysis_data, aes(x = genre, y = msPlayed)) +
+  geom_boxplot(fill = "lightcoral", outlier.color = "red", outlier.shape = 1) +
+  xlab("Genre") +
+  ylab("Playback Time (msPlayed)") +
+  ggtitle("Playback Time by Genre") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# Box Plot for `msPlayed` across top artists
+top_artists <- names(sort(table(spotify_analysis_data$artistName), decreasing = TRUE))[1:10]
+filtered_data <- spotify_analysis_data %>% filter(artistName %in% top_artists)
+
+ggplot(filtered_data, aes(x = artistName, y = msPlayed)) +
+  geom_boxplot(fill = "lightblue", outlier.color = "red", outlier.shape = 1) +
+  xlab("Artist") +
+  ylab("Playback Time (msPlayed)") +
+  ggtitle("Playback Time by Top 10 Artists") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+The **Playback Time by Genre** plot shows that genres like "alternative" and "pop" exhibit high variability in playback times, with several notable outliers, particularly in genres like "metal" and "pop." This suggests that certain tracks within these genres receive much higher engagement than others, potentially due to genre popularity or track-specific factors.
+
+Similarly, the **Playback Time by Top 10 Artists** plot indicates that some artists, such as **"Low Roar,"** have tracks with particularly high playback times, standing out as potential favorites or frequently played songs. Meanwhile, popular artists like **"blackbear"** and **"the neighbourhood"** show more uniform playback times across their tracks, indicating consistent engagement levels among listeners.
+
+While these insights from categorical variables provide an overview, a deeper exploration of **pairwise relationships between each predictor and playback time** (bivariate analysis) will help refine our understanding. This analysis will involve:
+
+1. **Scatterplots** for continuous predictors (e.g., `danceability`, `energy`, `tempo`) against `msPlayed`, to observe any linear or non-linear relationships that may affect playback duration.
+2. **Boxplots** for categorical variables (`genre` and `artistName`) against `msPlayed`, to investigate if playback time significantly varies across different categories.
+
+These analyses will guide us in identifying relevant patterns and preparing for **Regression Modeling**, which aims to quantify and predict the impact of these features on playback time.
+
+Let’s proceed with the 
+### 4. Bivariate Analysis:
+#### 4.1 Scatterplots for Continuous Predictors
+```{r}
+# Scatterplot for danceability vs. msPlayed
+ggplot(spotify_analysis_data, aes(x = danceability, y = msPlayed)) +
+  geom_point(alpha = 0.4, color = "steelblue") +
+  labs(title = "Playback Time by Danceability", x = "Danceability", y = "Playback Time (msPlayed)") +
+  theme_minimal()
+
+# Scatterplot for energy vs. msPlayed
+ggplot(spotify_analysis_data, aes(x = energy, y = msPlayed)) +
+  geom_point(alpha = 0.4, color = "coral") +
+  labs(title = "Playback Time by Energy", x = "Energy", y = "Playback Time (msPlayed)") +
+  theme_minimal()
+
+# Scatterplot for tempo vs. msPlayed
+ggplot(spotify_analysis_data, aes(x = tempo, y = msPlayed)) +
+  geom_point(alpha = 0.4, color = "forestgreen") +
+  labs(title = "Playback Time by Tempo", x = "Tempo", y = "Playback Time (msPlayed)") +
+  theme_minimal()
+```
+
+#### 4.2 Boxplots for Categorical Predictors
+```{r}
+# Boxplot for msPlayed by genre
+ggplot(spotify_analysis_data, aes(x = genre, y = msPlayed)) +
+  geom_boxplot(outlier.color = "red", fill = "lightpink") +
+  labs(title = "Playback Time by Genre", x = "Genre", y = "Playback Time (msPlayed)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# Boxplot for msPlayed by top 10 artists
+# Filtering top 10 artists for boxplot
+top_10_artists <- spotify_analysis_data %>%
+  filter(artistName %in% c("blackbear", "alec benjamin", "charlie puth", "kato", "lauv", 
+                           "linkin park", "low roar", "lund", "radwimps", "the neighbourhood"))
+
+ggplot(top_10_artists, aes(x = artistName, y = msPlayed)) +
+  geom_boxplot(outlier.color = "red", fill = "lightblue") +
+  labs(title = "Playback Time by Top 10 Artists", x = "Artist", y = "Playback Time (msPlayed)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+1. **Playback Time vs. Continuous Features**:
+   - **Tempo**: The scatterplot shows no distinct pattern between tempo and playback time, with scattered data points across the range of tempo values. A few high outliers are evident, but no strong trend emerges.
+   - **Energy**: Playback time does not show a clear relationship with energy levels. The distribution is uniform, suggesting energy might not be a significant predictor of playback time.
+   - **Danceability**: While no evident trend links danceability to playback time, there are clusters of outliers for both low and high danceability values.
+
+2. **Playback Time by Genre**:
+   - Boxplots indicate that genres such as "metal" and "pop" have higher variability in playback times. Notable outliers exist, with some tracks receiving exceptionally high engagement.
+   - Other genres like "classical" and "lo-fi" exhibit more consistent playback times with fewer extreme values.
+
+3. **Playback Time by Top 10 Artists**:
+   - Artists like **"Low Roar"** and **"Radwimps"** stand out with tracks having significantly high playback times, evident from the extreme outliers.
+   - Popular artists like **"Blackbear"** and **"The Neighbourhood"** display more consistent playback times, indicating sustained and uniform engagement.
+
+#### Key Insights:
+- **No strong linear trends** exist between playback time and continuous variables (`tempo`, `energy`, `danceability`), though outliers suggest potential niche influences.
+- **Genres and artists** exhibit distinctive playback time distributions, with some showing extreme variability, suggesting they might have niche, highly engaged audiences.
+
+The variability observed, especially among genres and artists, suggests that categorical variables like `genre` and `artistName` might significantly influence playback time. The next logical step is to proceed with **Regression Modeling** to quantify the impact of these predictors and identify the key variables driving playback time.
+
+
+### 3.3 Regression Modeling:
+To understand the factors affecting playback time (`msPlayed`), we proceed to **Regression Modeling**. This phase aims to:
+
+1. **Quantify Relationships**: Determine how continuous features (`danceability`, `energy`, `tempo`) and categorical features (`genre`, `artistName`) influence playback time.
+2. **Predict Playback Duration**: Build a model to predict `msPlayed`, potentially revealing patterns for improved recommendations.
+3. **Identify Key Predictors**: Pinpoint the most influential song attributes on playback duration.
+
+#### Model Setup
+
+We’ll use a **multiple linear regression** model where `msPlayed` is the dependent variable, and our predictors include `danceability`, `energy`, `tempo`, `genre`, and `artistName`. R will automatically create dummy variables for categorical predictors.
+
+```{r}
+# Fit the regression model
+model <- lm(msPlayed ~ danceability + energy + tempo + genre + artistName, data = spotify_analysis_data_filtered)
+
+# Summarize model results
+summary(model)
+```
+#### Interpretation of Regression Results and Next Steps
+
+The regression results indicate a low \( R^2 \) (8.41%), meaning that our model explains only a small portion of the variability in playback time (`msPlayed`). This is expected given the complex and diverse nature of music listening behavior, which is influenced by many factors beyond song attributes.
+
+##### Key Findings:
+1. **Significant Predictors**:
+   - **Genres**: Certain genres like **Asian Pop**, **Chill Pop**, and **EDM** show significant positive associations with playback time.
+   - **Artists**: Specific artists, such as **Alan Walker**, **DJ Snake**, and **Illenium**, have significant coefficients, indicating their songs either consistently attract high or low playback times. 
+
+2. **Non-Significant Predictors**:
+   - Many artists and genres have non-significant coefficients, suggesting that these categories do not substantially impact playback time in this model.
+   - Continuous variables (`danceability`, `energy`, `tempo`) show low predictive power and insignificant coefficients, which aligns with the low correlations observed in our preliminary analysis.
+
+##### Next Steps:
+Given these findings, we will:
+1. **Evaluate Model Diagnostics**: Check for issues like multicollinearity and heteroscedasticity to ensure model robustness.
+2. **Consider Alternative Models**: Explore non-linear models or machine learning techniques like decision trees or random forests, which might capture complex relationships better.
+3. **Feature Engineering**: Create interaction terms or new categorical groupings to capture hidden patterns.
+
+Let's proceed by analyzing model diagnostics to assess potential improvements.
+
+```{r}
+
+```
+
+
+
