@@ -55,20 +55,12 @@ This project aims to identify key audio features and metadata that significantly
 | `energy`       | Balanced with slight left skew                |
 | `tempo`        | Normalized and centered                        |
 
-<img width="1280" height="880" alt="image" src="https://github.com/user-attachments/assets/d4e9472b-85bc-40b2-9bae-4ac45553083c" />
-<img width="1280" height="880" alt="image" src="https://github.com/user-attachments/assets/7e8fa361-aaa6-40e5-bdd1-597831d8254f" />
-<img width="1280" height="880" alt="image" src="https://github.com/user-attachments/assets/85ff901c-970f-4f52-9601-a6d46f29287b" />
-<img width="1280" height="880" alt="image" src="https://github.com/user-attachments/assets/eefda1d6-3560-4a68-bab2-73faa3a52790" />
-
 ---
 
 ### 3.2 Categorical Variable Distributions
 
 - **Genres**: Pop, Phonk, Alternative, and Bollywood were dominant
 - **Artists**: blackbear, Lauv, and Linkin Park were top contributors
-
-<img width="1280" height="880" alt="image" src="https://github.com/user-attachments/assets/1e2fa0a1-8125-45ff-80b3-4367ab148e83" />
-<img width="1280" height="880" alt="image" src="https://github.com/user-attachments/assets/957a6ff3-cb76-41b2-a0f2-11d5828e3a49" />
 
 Filtered `"Other"` category for focused analysis.
 
@@ -79,8 +71,6 @@ Filtered `"Other"` category for focused analysis.
 - Low correlation between `msPlayed` and continuous features.
 - Moderate correlation between `danceability` and `energy`.
 
-<img width="1280" height="880" alt="image" src="https://github.com/user-attachments/assets/c4c52e7d-0d40-4f35-b7c6-f6f6ca8175c0" />
-
 ---
 
 ### 3.4 Playback Time Analysis by Categorical Variables
@@ -88,9 +78,6 @@ Filtered `"Other"` category for focused analysis.
 Boxplots showed:
 - Variability across **genres** (metal/pop had high spread)
 - High playback time outliers for artists like **Low Roar**
-
-<img width="1280" height="880" alt="image" src="https://github.com/user-attachments/assets/be150820-eb04-4354-82f4-1a47fe426eb5" />
-<img width="1280" height="880" alt="image" src="https://github.com/user-attachments/assets/9dabff57-e530-4af7-b873-326c4a74b230" />
 
 ---
 
@@ -101,10 +88,6 @@ Boxplots showed:
   - `danceability` vs `msPlayed`
   - `energy` vs `msPlayed`
   - `tempo` vs `msPlayed`
-
-<img width="1280" height="880" alt="image" src="https://github.com/user-attachments/assets/05aaf803-7703-49ca-847e-0e945f45bc47" />
-<img width="1280" height="880" alt="image" src="https://github.com/user-attachments/assets/4220f5fb-2e5e-4c55-abe4-54c9f8e2bf51" />
-<img width="1280" height="880" alt="image" src="https://github.com/user-attachments/assets/c8bdb1df-e3ab-40cb-b7af-af532c851553" />
 
 ---
 
