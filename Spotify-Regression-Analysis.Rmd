@@ -2,8 +2,8 @@
 title: "Regression Analysis on Spotify Song Attributes - MATH564"
 author: "Lakshmi Sindhu Pulugundla, Lasya Priya Thota, Kaustubh Dangche"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -123,6 +123,10 @@ library(ggplot2)  # Optional, for visualization if needed
 #install.packages("VIM") # KNN imputation
 library(VIM)
 library(corrplot)
+# Load necessary library for diagnostic tests
+library(lmtest)
+# Multicolinearity
+library(car)
 
 ```
 
@@ -414,110 +418,121 @@ To address the challenges identified in the genre column—unspecified genres, r
 **Step 4: Mapping Genres into Broader Categories**
 Using a predefined mapping to standardize genre values.
 
+
 ```{r}
+
+# # Applying mapping with recode
 genre_mapping <- c(
-    # Standardizing popular genres
-    "alt z" = "alternative", 
-    "album rock" = "rock", 
-    "british orchestra" = "classical", 
-    "desi hip hop" = "hip hop", 
-    "bedroom r&b" = "r&b", 
-    "singer-songwriter pop" = "pop", 
-    "la pop" = "pop", 
-    "lo-fi chill" = "lo-fi", 
-    "orchestral soundtrack" = "classical", 
-    "comic" = "other", 
-    "alternative metal" = "metal", 
-    "deep underground hip hop" = "hip hop", 
-    "pop" = "pop", 
-    "classical" = "classical", 
-    "modern alternative rock" = "alternative", 
-    "scandipop" = "pop", 
-    "punjabi pop" = "pop", 
-    "folk-pop" = "folk", 
-    "acoustic pop" = "pop", 
-    "art pop" = "pop", 
-    "electronica" = "electronic", 
-    "dance pop" = "pop", 
-    "bedroom pop" = "pop", 
-    "chill r&b" = "r&b", 
-    "indian lo-fi" = "lo-fi", 
-    "instrumental post-rock" = "post-rock", 
-    "classic bollywood" = "bollywood", 
-    "afghan pop" = "pop", 
-    "classic rock" = "rock", 
-    "german soundtrack" = "classical", 
-    "anime lo-fi" = "lo-fi", 
-    "lo-fi study" = "lo-fi", 
-    "dark r&b" = "r&b", 
-    "modern indie pop" = "indie", 
-    "pop edm" = "edm", 
-    "uk contemporary r&b" = "r&b", 
-    "emo rap" = "hip hop", 
-    "classic pakistani pop" = "pop", 
-    "japanese chillhop" = "chillhop", 
-    "japanese vgm" = "vgm", 
-    "anime" = "other", 
-    "bhangra" = "indian", 
-    "afrobeats" = "afrobeat", 
-    "j-pop" = "asian pop", 
-    "k-pop" = "asian pop", 
-    
-    # More specific mappings for sub-genres
-    "aggressive phonk" = "phonk",
-    "alabama indie" = "indie",
-    "ambient" = "ambient",
-    "alabama rap" = "rap",
-    "australian dance" = "dance",
-    "australian indie" = "indie",
-    "australian pop" = "pop",
-    "austindie" = "indie",
-    "bass trap" = "trap",
-    "bedroom soul" = "soul",
-    "big room" = "edm",
-    "brostep" = "brostep",
-    "calming instrumental" = "instrumental",
-    "chillhop" = "chillhop",
-    "chillstep" = "chillstep",
-    "complextro" = "electronic",
-    "contemporary country" = "country",
-    "country" = "country",
-    "deep tropical house" = "edm",
-    "desi pop" = "pop",
-    "detroit hip hop" = "hip hop",
-    "detroit indie" = "indie",
-    "disco" = "disco",
-    "electropop" = "electropop",
-    "electro house" = "edm",
-    "electronic" = "electronic",
-    "filmi" = "bollywood",
-    "future rock" = "rock",
-    "indietronica" = "indie",
-    "indie pop rap" = "indie rap",
-    "instrumental grime" = "grime",
-    "instrumental math rock" = "post-rock",
-    "j-pop boy group" = "j-pop",
-    "japanese old school hip hop" = "hip hop",
-    "k-pop girl group" = "k-pop",
-    "lo-fi brasileiro" = "lo-fi",
-    "lo-fi indie" = "lo-fi",
-    "lo-fi jazzhop" = "lo-fi",
-    "lo-fi latino" = "lo-fi",
-    "lo-fi sleep" = "lo-fi",
-    "melodic dubstep" = "dubstep",
-    "metropopolis" = "electronic",
-    "phonk" = "phonk",
-    "pop edm" = "edm",
-    "pop folk" = "folk",
-    "rap rock" = "rap",
-    "reggaeton" = "reggaeton",
-    "soul" = "soul",
-    "trap" = "trap",
-    "vaporwave" = "vaporwave"
+   "alt z" = "alternative",
+  "album rock" = "rock",
+  "british orchestra" = "classical",
+  "desi hip hop" = "hip hop",
+  "bedroom r&b" = "r&b",
+  "singer-songwriter pop" = "pop",
+  "la pop" = "pop",
+  "lo-fi chill" = "lo-fi",
+  "orchestral soundtrack" = "classical",
+  "comic" = "other",
+  "alternative metal" = "metal",
+  "deep underground hip hop" = "hip hop",
+  "pop" = "pop",
+  "classical" = "classical",
+  "modern alternative rock" = "alternative",
+  "scandipop" = "pop",
+  "punjabi pop" = "pop",
+  "folk-pop" = "folk",
+  "acoustic pop" = "pop",
+  "art pop" = "pop",
+  "electronica" = "electronic",
+  "dance pop" = "pop",
+  "bedroom pop" = "pop",
+  "chill r&b" = "r&b",
+  "indian lo-fi" = "lo-fi",
+  "instrumental post-rock" = "post-rock",
+  "classic bollywood" = "bollywood",
+  "afghan pop" = "pop",
+  "classic rock" = "rock",
+  "german soundtrack" = "classical",
+  "anime lo-fi" = "lo-fi",
+  "lo-fi study" = "lo-fi",
+  "dark r&b" = "r&b",
+  "modern indie pop" = "indie",
+  "pop edm" = "edm",
+  "uk contemporary r&b" = "r&b",
+  "emo rap" = "hip hop",
+  "classic pakistani pop" = "pop",
+  "japanese chillhop" = "chillhop",
+  "japanese vgm" = "vgm",
+  "anime" = "other",
+  "bhangra" = "indian",
+  "afrobeats" = "afrobeat",
+  "j-pop" = "asian pop",
+  "k-pop" = "asian pop"
 )
 
-# Applying mapping
-spotify_analysis_data$genre <- recode(spotify_analysis_data$genre, !!!genre_mapping)
+
+```
+
+
+
+```{r}
+# Applying mapping with recode
+spotify_analysis_data$genre <- dplyr::recode(
+  spotify_analysis_data$genre,
+  "alt z" = "alternative",
+  "album rock" = "rock",
+  "british orchestra" = "classical",
+  "desi hip hop" = "hip hop",
+  "bedroom r&b" = "r&b",
+  "singer-songwriter pop" = "pop",
+  "la pop" = "pop",
+  "lo-fi chill" = "lo-fi",
+  "orchestral soundtrack" = "classical",
+  "comic" = "other",
+  "alternative metal" = "metal",
+  "deep underground hip hop" = "hip hop",
+  "pop" = "pop",
+  "classical" = "classical",
+  "modern alternative rock" = "alternative",
+  "scandipop" = "pop",
+  "punjabi pop" = "pop",
+  "folk-pop" = "folk",
+  "acoustic pop" = "pop",
+  "art pop" = "pop",
+  "electronica" = "electronic",
+  "dance pop" = "pop",
+  "bedroom pop" = "pop",
+  "chill r&b" = "r&b",
+  "indian lo-fi" = "lo-fi",
+  "instrumental post-rock" = "post-rock",
+  "classic bollywood" = "bollywood",
+  "afghan pop" = "pop",
+  "classic rock" = "rock",
+  "german soundtrack" = "classical",
+  "anime lo-fi" = "lo-fi",
+  "lo-fi study" = "lo-fi",
+  "dark r&b" = "r&b",
+  "modern indie pop" = "indie",
+  "pop edm" = "edm",
+  "uk contemporary r&b" = "r&b",
+  "emo rap" = "hip hop",
+  "classic pakistani pop" = "pop",
+  "japanese chillhop" = "chillhop",
+  "japanese vgm" = "vgm",
+  "anime" = "other",
+  "bhangra" = "indian",
+  "afrobeats" = "afrobeat",
+  "j-pop" = "asian pop",
+  "k-pop" = "asian pop"
+)
+```
+
+```{r}
+# Apply mapping with a loop
+for (key in names(genre_mapping)) {
+  spotify_analysis_data$genre[spotify_analysis_data$genre == key] <- genre_mapping[key]
+}
+
 ```
 
 To ensure the dataset remains focused on meaningful categories and avoids overcomplicating the analysis with rare genres, we now address infrequent genres by grouping them into a broader "Other" category. This step simplifies the genre distribution and strengthens the interpretability of our analysis. Let’s proceed with grouping these rare genres.
@@ -1004,8 +1019,8 @@ While these insights from categorical variables provide an overview, a deeper ex
 These analyses will guide us in identifying relevant patterns and preparing for **Regression Modeling**, which aims to quantify and predict the impact of these features on playback time.
 
 Let’s proceed with the 
-### 4. Bivariate Analysis:
-#### 4.1 Scatterplots for Continuous Predictors
+### 3.3  Bivariate Analysis:
+#### 3.3.1 Scatterplots for Continuous Predictors
 ```{r}
 # Scatterplot for danceability vs. msPlayed
 ggplot(spotify_analysis_data, aes(x = danceability, y = msPlayed)) +
@@ -1026,7 +1041,7 @@ ggplot(spotify_analysis_data, aes(x = tempo, y = msPlayed)) +
   theme_minimal()
 ```
 
-#### 4.2 Boxplots for Categorical Predictors
+#### 3.3.2 Boxplots for Categorical Predictors
 ```{r}
 # Boxplot for msPlayed by genre
 ggplot(spotify_analysis_data, aes(x = genre, y = msPlayed)) +
@@ -1061,14 +1076,14 @@ ggplot(top_10_artists, aes(x = artistName, y = msPlayed)) +
    - Artists like **"Low Roar"** and **"Radwimps"** stand out with tracks having significantly high playback times, evident from the extreme outliers.
    - Popular artists like **"Blackbear"** and **"The Neighbourhood"** display more consistent playback times, indicating sustained and uniform engagement.
 
-#### Key Insights:
+##### Key Insights:
 - **No strong linear trends** exist between playback time and continuous variables (`tempo`, `energy`, `danceability`), though outliers suggest potential niche influences.
 - **Genres and artists** exhibit distinctive playback time distributions, with some showing extreme variability, suggesting they might have niche, highly engaged audiences.
 
 The variability observed, especially among genres and artists, suggests that categorical variables like `genre` and `artistName` might significantly influence playback time. The next logical step is to proceed with **Regression Modeling** to quantify the impact of these predictors and identify the key variables driving playback time.
 
 
-### 3.3 Regression Modeling:
+## 4 Regression Modeling:
 To understand the factors affecting playback time (`msPlayed`), we proceed to **Regression Modeling**. This phase aims to:
 
 1. **Quantify Relationships**: Determine how continuous features (`danceability`, `energy`, `tempo`) and categorical features (`genre`, `artistName`) influence playback time.
@@ -1086,18 +1101,18 @@ model <- lm(msPlayed ~ danceability + energy + tempo + genre + artistName, data 
 # Summarize model results
 summary(model)
 ```
-#### Interpretation of Regression Results and Next Steps
 
-The regression results indicate a low \( R^2 \) (8.41%), meaning that our model explains only a small portion of the variability in playback time (`msPlayed`). This is expected given the complex and diverse nature of music listening behavior, which is influenced by many factors beyond song attributes.
+### 4.1 Statistical Significance and Interpretation
 
-##### Key Findings:
-1. **Significant Predictors**:
-   - **Genres**: Certain genres like **Asian Pop**, **Chill Pop**, and **EDM** show significant positive associations with playback time.
-   - **Artists**: Specific artists, such as **Alan Walker**, **DJ Snake**, and **Illenium**, have significant coefficients, indicating their songs either consistently attract high or low playback times. 
+- **Significant Predictors**:
+  - Some variables, such as `artistNamealan walker`, `artistNamedj snake`, `artistNameillenium`, and `genreedm`, show strong significance (very low p-values), which means they are meaningful predictors of `msPlayed`.
+  
+- **Aliased Coefficients**:
+  - Many `NA` values in the coefficient table suggest collinearity or insufficient data for certain levels of categorical predictors like `artistName`.
 
-2. **Non-Significant Predictors**:
-   - Many artists and genres have non-significant coefficients, suggesting that these categories do not substantially impact playback time in this model.
-   - Continuous variables (`danceability`, `energy`, `tempo`) show low predictive power and insignificant coefficients, which aligns with the low correlations observed in our preliminary analysis.
+- **Low Adjusted \( R^2 \)**:
+  - The adjusted \( R^2 \) is 4.25%, indicating the model explains only a small portion of the variability in playback time. This is expected due to the complexity of user engagement with songs, which likely depends on other unmeasured factors.
+
 
 ##### Next Steps:
 Given these findings, we will:
@@ -1107,9 +1122,407 @@ Given these findings, we will:
 
 Let's proceed by analyzing model diagnostics to assess potential improvements.
 
+# **Part 2: Regression Diagnostics - **
+
+Regression diagnostics are critical for validating the assumptions of our regression model and addressing potential issues that could affect its reliability, accuracy, and interpretability. This phase ensures that the model aligns with the underlying statistical principles required for regression analysis. 
+
+The diagnostics will focus on the following key assumptions and issues:
+
+1. **Linearity**: The predictors and the response variable should have a linear relationship.
+2. **Homoscedasticity**: The variance of residuals should remain constant across fitted values.
+3. **Multicollinearity**: Predictors should not exhibit high correlation with each other to ensure stable regression coefficients.
+4. **Influential Points**: Outliers or high-leverage points that disproportionately affect the model should be identified and managed.
+
+**Objective**: This phase aims to assess the validity of these assumptions using both graphical and statistical methods, including:
+- Residuals vs. Fitted Plots.
+- Statistical tests such as the Breusch-Pagan Test.
+- Variance Inflation Factor (VIF) for multicollinearity.
+- Cook’s Distance and Leverage Plots for identifying influential points.
+
+By systematically addressing these aspects, we aim to refine the model for improved robustness, interpretability, and predictive power.
+
+
+## **1. Heteroscedasticity Analysis**
+Heteroscedasticity occurs when the variance of residuals changes across fitted values. We will:
+
+### Plot residuals vs. fitted values
+
 ```{r}
+# Residual vs. Fitted Plot
+plot(model, which = 1, main = "Residuals vs Fitted", col = "blue")
 
 ```
 
+#### **Inference: Residuals vs Fitted Plot**
 
+1. **Linearity**: Residuals are randomly scattered around zero, suggesting the **linearity assumption** is met.
+2. **Outliers**: Points like `27205` and `843` indicate **potential outliers**, warranting further investigation.
+3. **Homoscedasticity**: Consistent spread of residuals supports the **constant variance assumption**.
+4. **Influential Observations**: Labeled points may have significant leverage and need closer examination.
+
+
+### Perform the Breusch-Pagan test.
+
+```{r}
+# Breusch-Pagan Test for Heteroscedasticity
+bptest(model)
+```
+The **studentized Breusch-Pagan test** checks for heteroscedasticity (non-constant variance of residuals). 
+
+- **p-value**: 0.8555 (greater than 0.05)
+- **Conclusion**: The test fails to detect heteroscedasticity, confirming the assumption of constant residual variance (homoscedasticity).
+- **Implications**: No need for variance-stabilizing transformations; the model is valid in terms of this assumption.
+
+
+With the assumption of homoscedasticity confirmed through the Breusch-Pagan test, we proceed to examine **multicollinearity** among the predictors. High multicollinearity can inflate variance in regression coefficients, making the model unstable and difficult to interpret. We will use the **Variance Inflation Factor (VIF)** to detect and assess the severity of multicollinearity. 
+
+## 2. Assessment of Multicollinearity Using VIF
+Multicollinearity refers to a situation where two or more predictors in a regression model are highly correlated, leading to inflated standard errors for regression coefficients. This can make the coefficients unstable and reduce the interpretability of the model. To detect multicollinearity, we use the **Variance Inflation Factor (VIF)**. 
+
+- **VIF Values**:
+  - VIF = 1: No multicollinearity.
+  - VIF > 5: Moderate multicollinearity.
+  - VIF > 10: Severe multicollinearity, requiring intervention.
+
+```{r}
+# Calculate VIF for all predictors in the model
+#vif_values <- vif(model)
+
+# Print the VIF values
+#print(vif_values)
+```
+There is an error with VIF (`there are aliased coefficients in the model`) , which confirms that certain levels of categorical predictors are causing singularities.
+
+**Why This Happens**
+1. **Too Many Levels**:
+   - `artistName` and `genre` have numerous levels, some of which may be perfectly collinear or underrepresented in the data.
+2. **Perfect Multicollinearity**:
+   - If a level of a categorical variable is redundant or highly correlated with other predictors, the model cannot estimate a unique coefficient.
+
+### **Solutions**
+1. **Group Rare Categories**:
+   - Consolidate rare levels in `artistName` and `genre` into an "Other" category. This will reduce the dimensionality and prevent singularities.
+
+```{r}
+# Define a threshold
+artist_threshold <- 10
+genre_threshold <- 20
+
+# Group rare artists into "Other"
+artist_counts <- table(spotify_analysis_data_filtered$artistName)
+rare_artists <- names(artist_counts[artist_counts < artist_threshold])
+spotify_analysis_data_filtered$artistName <- ifelse(
+  spotify_analysis_data_filtered$artistName %in% rare_artists,
+  "Other",
+  spotify_analysis_data_filtered$artistName
+)
+
+# Group rare genres into "Other"
+genre_counts <- table(spotify_analysis_data_filtered$genre)
+rare_genres <- names(genre_counts[genre_counts < genre_threshold])
+spotify_analysis_data_filtered$genre <- ifelse(
+  spotify_analysis_data_filtered$genre %in% rare_genres,
+  "Other",
+  spotify_analysis_data_filtered$genre
+)
+```
+
+2. **Recheck Aliased Coefficients**:
+   - After grouping rare categories, refit the model and check for aliased coefficients:
+   
+```{r}
+model <- lm(msPlayed ~ danceability + energy + tempo + genre + artistName, data = spotify_analysis_data_filtered)
+alias(model)
+```
+The `alias()` output confirms that there are **linear dependencies** among certain variables in your model. These dependencies often occur when:
+
+1. **Too many levels in categorical variables**: Some levels of `genre` and `artistName` are either too sparsely represented or perfectly correlated with other levels.
+2. **Unnecessary complexity in predictors**: Including numerous categorical variables with many levels can introduce singularities.
+
+
+**Steps to Resolve the Issue**
+
+1. **Group Rare Levels**
+   - Reduce sparsely populated categories by grouping them into an "Other" category.
+```{r}
+# For genre
+genre_counts <- table(spotify_analysis_data_filtered$genre)
+rare_genres <- names(genre_counts[genre_counts < 10]) # Threshold can be adjusted
+spotify_analysis_data_filtered$genre <- ifelse(
+  spotify_analysis_data_filtered$genre %in% rare_genres,
+  "Other",
+  spotify_analysis_data_filtered$genre
+  )
+
+# For artistName
+artist_counts <- table(spotify_analysis_data_filtered$artistName)
+rare_artists <- names(artist_counts[artist_counts < 5]) # Threshold can be adjusted
+spotify_analysis_data_filtered$artistName <- ifelse(
+  spotify_analysis_data_filtered$artistName %in% rare_artists,
+ "Other",
+ spotify_analysis_data_filtered$artistName
+)
+```
+ 
+```{r}
+alias_matrix <- alias(model)$Complete
+print(alias_matrix)
+```
+Dropping Aliased Variables
+
+```{r}
+# Load necessary libraries
+library(dplyr)
+
+# Model definition (replace this with your actual model formula)
+model <- lm(msPlayed ~ danceability + energy + tempo + genre + artistName, 
+            data = spotify_analysis_data_filtered)
+
+# Step 1: Identify Aliased Variables
+alias_matrix <- alias(model)$Complete
+print(alias_matrix) # View the alias matrix for reference
+
+# Step 2: Extract Names of Aliased Variables
+# Identify columns with linear dependencies (non-zero values in alias matrix)
+aliased_vars <- colnames(alias_matrix)[apply(alias_matrix, 2, function(x) any(x != 0))]
+print(aliased_vars) # Print the aliased variables for review
+
+
+```
+
+```{r}
+# Check the column names to confirm available variables
+colnames(spotify_analysis_data)
+
+# Update the model formula with valid column names
+# Replace 'acousticness' with the correct variable if it exists under a different name
+spotify_model <- lm(msPlayed ~ danceability + energy + genre + artistName, data = spotify_analysis_data)
+summary(spotify_model)
+
+```
+Now that we got rid of the Alias Variables, Let's Proceed with:
+### Calculation of Variance Inflation Factor - 
+```{r}
+# Calculate Variance Inflation Factor (VIF)
+vif_values <- vif(spotify_model)
+
+# Print the VIF values
+print(vif_values)
+
+# Identify predictors with high VIF (e.g., >5)
+high_vif <- names(vif_values[vif_values > 5])
+
+cat("Predictors with high VIF:", high_vif, "\n")
+```
+As we can see, no GVIF values exceed 5, indicating there is no Multicollinearity now.
+
+Which brings us to the next step - 
+
+## 3. Check for Influential Points.
+```{r}
+# Cook's Distance
+cooks_distances <- cooks.distance(model)
+
+# Leverage values
+leverage_values <- hatvalues(model)
+
+# Plot Cook's Distance
+plot(cooks_distances, type = "h", main = "Cook's Distance", ylab = "Cook's Distance")
+abline(h = 4 / nrow(spotify_analysis_data_filtered), col = "red", lty = 2)  # Threshold line
+
+# Identify high Cook's Distance
+influential_points_cooks <- which(cooks_distances > (4 / nrow(spotify_analysis_data_filtered)))
+print("Influential Points (Cook's Distance):")
+print(influential_points_cooks)
+
+# Plot Leverage values
+plot(leverage_values, type = "h", main = "Leverage Values", ylab = "Leverage")
+abline(h = 2 * (length(coefficients(model)) / nrow(spotify_analysis_data_filtered)), col = "red", lty = 2)  # Threshold line
+
+# Identify high Leverage Points
+influential_points_leverage <- which(leverage_values > (2 * (length(coefficients(model)) / nrow(spotify_analysis_data_filtered))))
+print("Influential Points (Leverage):")
+print(influential_points_leverage)
+
+```
+
+#### **Key Observations from the Plot:**
+1. **High Influence Points**:
+   - Several points exceed the critical threshold, with notable spikes in the Cook's Distance plot.
+   - Examples of influential points include indices 116, 273, 286, 487, 945, 1190, 2375, and 2716.
+
+2. **Concentration of Influential Points**:
+   - Influential points are spread throughout the dataset but appear concentrated around specific ranges, which may correspond to certain patterns in the data (e.g., outliers or high-leverage observations).
+
+3. **Magnitude of Influence**:
+   - The most influential points significantly deviate from the majority of observations, suggesting their disproportionate impact on the regression coefficients.
+
+4. **Potential Issues**:
+   - Retaining these points may lead to biased or unstable regression estimates.
+   - Their presence may indicate outliers, leverage points, or model misspecifications.
+
+5. **Action Required**:
+   - Investigate these points individually to determine their nature (e.g., data entry errors, valid outliers, or leverage points).
+   - Consider their removal or use of robust regression techniques to minimize their impact.
+
+Now that we are done with the Regresional Diagnostics, Let's jump into trying and resolving the issues that we identified.
+
+
+# Part-3 Remidiation: Addressing the Model Issues - 
+
+### Introduction to the Remediation Phase
+
+The **Remediation Phase** serves as the pivotal part of the regression analysis, where the focus shifts to addressing the issues identified in the diagnostics phase. After detecting potential problems such as heteroscedasticity, multicollinearity, and the presence of influential points, this phase involves applying appropriate remedial measures to enhance the model's validity and performance.
+
+#### Objectives of the Remediation Phase:
+1. **Improve Model Assumptions**: Resolve violations of linear regression assumptions, such as unequal variance, non-normal residuals, and high leverage points.
+2. **Stabilize Predictions**: Mitigate the effects of multicollinearity and influential points, ensuring stable and interpretable coefficients.
+3. **Enhance Model Reliability**: Address heteroscedasticity and incorporate transformations, if needed, to improve model fit.
+4. **Prepare for Final Analysis**: Refit the regression model post-remediation and validate its performance.
+
+#### Key Steps in this Phase:
+1. **Addressing Heteroscedasticity**: Apply transformations or Weighted Least Squares (WLS) to correct unequal variance.
+2. **Handling Multicollinearity**: Modify the model by removing or combining predictors with high Variance Inflation Factor (VIF).
+3. **Dealing with Influential Points**: Remove or adjust for high-leverage and high-Cook’s distance points to stabilize model performance.
+4. **Re-evaluating the Model**: Fit the revised model and re-check assumptions to ensure the effectiveness of the remediation measures.
+
+With these goals in mind, we now proceed with implementing the first remediation step. Let’s begin by addressing **heteroscedasticity**. 
+
+Starting with - 
+## 1. Addressing Heteroscedasticity - 
+
+To address heteroscedasticity, we will apply **logarithmic transformations** to the dependent variable (`msPlayed`) as a preliminary step. Transforming the response variable can often stabilize the variance of residuals, improving model performance.
+
+
+```{r}
+# Apply log transformation to the response variable
+spotify_analysis_data_filtered$log_msPlayed <- log(spotify_analysis_data_filtered$msPlayed + 1)  # Adding 1 to avoid log(0)
+
+# Refit the regression model with the log-transformed response variable
+log_model <- lm(log_msPlayed ~ danceability + energy + tempo + genre + artistName, data = spotify_analysis_data_filtered)
+
+# Summarize the new model
+summary(log_model)
+
+# Diagnostic plot for residuals vs fitted values to verify improvement
+par(mfrow = c(2, 2))  # Display multiple diagnostic plots
+plot(log_model)
+```
+#### Summary of Key Observations:
+
+1. **Residual Plots**:
+   - **Residuals vs Fitted**: The spread of residuals appears more uniform, indicating an improvement in addressing heteroscedasticity.
+   - **Scale-Location Plot**: Shows a more consistent variance, confirming that the log transformation has helped stabilize residuals' variance.
+   - **Q-Q Plot**: Residuals are closer to the line, showing better normality but still indicating some deviations in the tails.
+   - **Residuals vs Leverage**: Influential points are still present, requiring further scrutiny.
+
+2. **Model Coefficients**:
+   - Some predictors, such as `danceability`, `genreanime score`, `genreasian pop`, and `artistNamehans zimmer`, are statistically significant (p < 0.05), suggesting a strong influence on the log-transformed `msPlayed`.
+   - Many predictors still exhibit non-significance, indicating room for further model refinement.
+
+3. **Model Performance**:
+   - **Adjusted \(R^2 = 0.2627\)**: Indicates that approximately 26.27% of the variance in `log_msPlayed` is explained by the predictors, a moderate improvement over the original model.
+   - **Residual Standard Error = 1.86**: Shows reduced error compared to the untransformed model.
+
+
+Despite the improvement in heteroscedasticity and model fit, there are still some issues to address:
+1. **Influential Points**: The residuals vs leverage plot shows potential influential points that may skew the model. These need to be further evaluated and possibly mitigated.
+2. **Non-significant Predictors**: Consider stepwise regression or other variable selection methods to refine the model further.
+3. **Alternative Transformations**: If the current results are not satisfactory, consider other transformations or non-linear modeling techniques.
+
+
+## 2. Influential Points Remediation
+
+We will now address influential points identified from Cook’s Distance and leverage plots. Points that have an undue influence on the regression model will be evaluated and potentially removed to improve model robustness.
+
+
+```{r}
+# Identify influential points based on Cook's Distance
+cutoff <- 4 / nrow(spotify_analysis_data_filtered)  # Common threshold
+influential <- which(cooks.distance(log_model) > cutoff)
+
+# Remove influential points and refit the model
+spotify_cleaned <- spotify_analysis_data_filtered[-influential, ]
+log_model_cleaned <- lm(log_msPlayed ~ danceability + energy + tempo + genre + artistName, data = spotify_cleaned)
+
+# Summarize the updated model
+summary(log_model_cleaned)
+
+# Diagnostic plots for the cleaned model
+par(mfrow = c(2, 2))
+plot(log_model_cleaned)
+```
+
+#### Key Observations:
+
+1. **Residual Plots**:
+   - **Residuals vs Fitted**: The residuals show improved homoscedasticity compared to earlier models. While there are some deviations, the spread appears more consistent.
+   - **Scale-Location Plot**: Indicates reduced heteroscedasticity, suggesting the log transformation and removal of influential points were effective.
+   - **Q-Q Plot**: Residuals follow the theoretical quantiles more closely, indicating better normality.
+   - **Residuals vs Leverage**: Most points have lower leverage, with fewer highly influential observations compared to the original model.
+
+2. **Model Coefficients**:
+   - Significant predictors include `danceability`, `genreasian pop`, `genrebaroque pop`, `artistNameanson seabra`, and others, with p-values < 0.05.
+   - Some predictors, such as `energy` and `tempo`, remain non-significant, which suggests further refinement could focus on feature selection.
+   - Genre and artist-level variations highlight the diverse factors influencing song playback.
+
+3. **Model Performance**:
+   - **Residual Standard Error**: Decreased to 1.45, indicating better model fit.
+   - **Adjusted \(R^2 = 0.3687\)**: Improved from the prior model, explaining approximately 36.87% of the variance in `log_msPlayed`.
+   - The model shows a significant overall F-statistic, demonstrating that it is statistically meaningful.
+
+
+
+The remedial measures have improved the model significantly, addressing key issues like heteroscedasticity, influential points, and multicollinearity. However, some non-significant predictors and unexplained variance suggest opportunities for additional improvement. Which brings us to the end of our project.
+
+## Final Interpretations and Recommendations
+
+
+#### **Summary of the Project**
+This project aimed to identify significant predictors of Spotify song playback time (`msPlayed`) using a robust regression analysis framework. Starting with an extensive dataset, we applied systematic data preprocessing, variable selection, and transformation techniques, culminating in a refined predictive model. Through the iterative process, we addressed challenges like multicollinearity, heteroscedasticity, and influential data points.
+
+
+#### **Key Findings**
+1. **Significant Predictors**:
+   - Song-level attributes such as `danceability` showed a positive association with playback time.
+   - Genre categories, including `genreasian pop` (positive) and `genrebaroque pop` (negative), revealed notable impacts on playback.
+   - Artist-specific effects were also observed, with some artists, such as `anson seabra` and `hans zimmer`, showing significant influence on playback time.
+
+2. **Model Performance**:
+   - The final regression model achieved an **Adjusted \(R^2 = 0.3687\)**, explaining approximately 36.87% of the variance in `log_msPlayed`.
+   - Residual plots post-remediation exhibited improved normality, reduced heteroscedasticity, and minimized leverage, indicating a well-fitted model.
+   - The **Residual Standard Error** reduced significantly to 1.45, showing a tighter fit compared to initial models.
+
+3. **Challenges Addressed**:
+   - **Multicollinearity**: By calculating Variance Inflation Factors (VIFs) and removing alias variables, we ensured stability in the regression coefficients.
+   - **Influential Points**: Cook's distance and leverage values identified outliers, which were then reviewed and excluded from the dataset to enhance model robustness.
+   - **Non-Normality of Residuals**: Applying a log transformation to `msPlayed` mitigated skewness and improved residual normality.
+
+
+#### **Limitations**
+1. **Explained Variance**: While the model captured significant predictors, nearly 63% of the variance remains unexplained, pointing to the potential influence of unmeasured factors like user-specific preferences or external events.
+2. **Genre Representation**: Certain genres with limited sample sizes might have introduced noise into the estimates, necessitating further stratification or oversampling techniques.
+3. **Artist Effects**: The inclusion of numerous artist categories increased the dimensionality and potentially masked the predictive power of other variables.
+
+
+#### **Future Work**
+1. **Advanced Modeling Techniques**:
+   - Employ machine learning algorithms such as Random Forest or Gradient Boosting to capture non-linear relationships and interactions between predictors.
+   - Implement LASSO or Ridge regression to streamline variable selection and handle multicollinearity in high-dimensional datasets.
+   
+2. **Incorporation of Additional Features**:
+   - Explore user-level data such as listener demographics, time-of-day effects, and playlist context to improve predictive accuracy.
+   - Include temporal trends to understand the evolving popularity of genres and artists.
+
+3. **Deep Dive into Genres and Artists**:
+   - Perform subgroup analyses for specific genres or artists to uncover nuanced patterns.
+   - Use clustering techniques to group similar artists or genres based on playback characteristics.
+
+4. **Enhanced Residual Analysis**:
+   - Investigate potential autocorrelation in residuals using Durbin-Watson tests.
+   - Explore alternative transformations or non-parametric regression techniques to handle non-linear residual patterns.
+
+
+#### **Conclusion**
+This project successfully demonstrated the utility of regression analysis in predicting song playback time on Spotify. The methodological rigor, combined with strategic remediation, resulted in a model that offers valuable insights into the attributes influencing user engagement. However, future enhancements, as outlined, will further refine the model and expand its applicability.
 
