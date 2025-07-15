@@ -133,10 +133,10 @@ lm(msPlayed ~ danceability + energy + tempo + genre + artistName, data = dataset
 
 ## 💾 Output
 
-A cleaned and reduced dataset was saved for model building:
+A cleaned and reduced dataset was saved for model building as the dataframe with the following name:
 
 ```bash
-spotify_analysis_data.csv
+spotify_analysis_data
 ```
 
 ---
