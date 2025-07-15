@@ -7,7 +7,7 @@
 
 ## 📌 Problem Statement
 
-This project aims to identify key audio features and metadata that significantly influence the total playback time (`msPlayed`) of songs on Spotify. We build a regression model using both continuous and categorical attributes to better understand user engagement patterns with music.
+This project investigates which audio features and metadata influence a listener’s engagement with songs, measured by `msPlayed` (milliseconds played). Using multiple regression analysis, we aim to predict playback time and uncover meaningful patterns across genres and artists.
 
 ---
 
@@ -15,125 +15,112 @@ This project aims to identify key audio features and metadata that significantly
 
 - **Source:** Spotify Song Attributes  
 - **Total Records:** 10,080  
-- **Response Variable:** `msPlayed` (playback time in milliseconds)  
+- **Response Variable:** `msPlayed`  
 - **Predictors:**
-  - **Continuous:** `danceability`, `energy`, `tempo`
-  - **Categorical:** `genre`, `artistName`
+  - 🎵 Continuous: `danceability`, `energy`, `tempo`  
+  - 🎤 Categorical: `genre`, `artistName`
 
 ---
 
-## 🧭 Project Workflow
+## 🧹 Data Preparation & Cleaning
 
-### 1. Data Preparation & Cleaning
-- **Handled Missing Values:**  
-  - Applied **KNN Imputation** (k = 5) on `danceability`, `energy`, and `tempo`
-- **Categorical Cleaning:**  
-  - Standardized `genre` and `artistName` by:
-    - Lowercasing
-    - Removing whitespace
-    - Mapping rare values to `"Other"`
-- **Outlier Treatment:**  
-  - Applied **IQR-based capping** to continuous variables
-- **Normalization:**  
-  - Scaled `danceability`, `energy`, and `tempo` between 0 and 1 using Min-Max normalization
-
-### 2. Feature Engineering
-- Created dummy variables for categorical columns
-- Retained `trackName` for traceability
-- Stored imputation flags for regression transparency
+- ✨ **Imputation:** KNN (k=5) for missing values in numerical features  
+- 🎯 **Categorical Handling:** Cleaned `genre` and `artistName`, grouped rare levels into `"Other"`  
+- 🧮 **Outlier Treatment:** IQR capping applied  
+- 📏 **Normalization:** Min-Max scaling on continuous variables  
+- 🗂️ **Encoding:** Dummy variables for categorical columns  
 
 ---
 
 ## 📊 Exploratory Data Analysis (EDA)
 
-### 3.1 Continuous Variable Distributions
+### 🎼 3.1 Continuous Variables
+- `msPlayed` was right-skewed  
+- `danceability`, `energy`, and `tempo` became well-centered after normalization  
 
-| Variable       | Distribution Observation                       |
-|----------------|------------------------------------------------|
-| `msPlayed`     | Right-skewed, large number of short-played tracks |
-| `danceability` | Balanced after normalization                  |
-| `energy`       | Balanced with slight left skew                |
-| `tempo`        | Normalized and centered                        |
+### 📚 3.2 Categorical Distribution
+- Dominant genres: Pop, Alternative, Bollywood, Phonk  
+- Top artists: blackbear, Lauv, Linkin Park  
+- `"Other"` category helped reduce noise from rare entries
 
----
-
-### 3.2 Categorical Variable Distributions
-
-- **Genres**: Pop, Phonk, Alternative, and Bollywood were dominant
-- **Artists**: blackbear, Lauv, and Linkin Park were top contributors
-
-Filtered `"Other"` category for focused analysis.
-
----
-
-### 3.3 Correlation Analysis
-
-- Low correlation between `msPlayed` and continuous features.
-- Moderate correlation between `danceability` and `energy`.
-
----
-
-### 3.4 Playback Time Analysis by Categorical Variables
-
-Boxplots showed:
-- Variability across **genres** (metal/pop had high spread)
-- High playback time outliers for artists like **Low Roar**
-
----
-
-### 3.5 Bivariate Analysis: Continuous vs Playback
-
-- No strong linear relationships were found.
-- Visualized scatter plots for:
-  - `danceability` vs `msPlayed`
-  - `energy` vs `msPlayed`
-  - `tempo` vs `msPlayed`
+### 💫 3.3.1 Bivariate Analysis
+- No clear linear relationships between playback time and features like tempo or energy  
+- Notable artist outliers: Low Roar, Radwimps  
+- Genre variability: Metal and Pop showed higher spread
 
 ---
 
 ## 🧮 Regression Modeling
 
-### Model Type:
-**Multiple Linear Regression**  
+### 🔧 Initial Model
 ```R
 lm(msPlayed ~ danceability + energy + tempo + genre + artistName, data = dataset)
 ```
 
-### Model Summary:
-
-* **R² = 0.0841**, Adjusted R² = 0.04247
-* Genres like **Asian Pop, Chill Pop, EDM** were significant
-* Artists like **Alan Walker, DJ Snake** had impactful coefficients
-* Continuous predictors were mostly insignificant
+* 📉 **Adjusted R²:** 0.0425
+* ⭐ Significant predictors: `artistNameAlan Walker`, `genreEDM`, `artistNameDJ Snake`
+* 🚫 Many aliased coefficients due to high dimensionality
 
 ---
 
-## ✅ Interpretation & Limitations
+## 🔍 Model Diagnostics
 
-### Key Learnings:
+### ✅ Assumption Checks
 
-* **Categorical variables** had more influence than continuous ones
-* **Playback behavior** is complex and driven by external factors beyond song attributes (e.g., listener context, playlist placement)
+* ✔️ **Homoscedasticity:** Passed (Breusch-Pagan p > 0.05)
+* ⚠️ **Multicollinearity:** Resolved by grouping rare categories
+* 🧨 **Influential Points:** Identified using Cook’s Distance and Leverage
 
-### Limitations:
+---
 
-* Low R² suggests a limited fit for linear regression
-* `"Other"` grouping reduced feature specificity
-* Further improvements possible via non-linear modeling (Random Forests, Gradient Boosting)
+## 🧪 Remediation Phase
+
+### 🔁 Log Transformation
+
+* 📈 Log-transformed `msPlayed` improved normality and variance stabilization
+* 💡 Adjusted R² increased to **0.2627**
+
+### 🧹 Influential Points Removed
+
+* 📉 Final Residual Standard Error: **1.45**
+* ✅ Adjusted R²: **0.3687**
+* 🎯 Significant predictors now included:
+
+  * `danceability`
+  * `genreasian pop`, `genrebaroque pop`
+  * `artistNameAnson Seabra`, `artistNameHans Zimmer`
+
+---
+
+## 🧠 Insights & Interpretations
+
+* 🎵 Categorical variables (genre, artistName) influenced playback more than continuous ones
+* 🎧 Listener behavior is nuanced—playback is affected by factors beyond audio features
+* 🔍 Linear models help, but they don’t fully capture the complexity of music engagement
+
+---
+
+## ❌ Limitations
+
+* 🧪 63% variance in playback time remains unexplained
+* 🎙️ Artist & genre categories still carry high dimensionality
+* 💭 User context, playlist type, or mood could be critical missing factors
 
 ---
 
 ## 🔮 Future Work
 
-* Explore **interaction terms** or **polynomial regression**
-* Apply **tree-based models** to capture non-linearity
-* Expand dataset with listener-specific behavior for personalization modeling
+* 🌳 Use **tree-based models** (Random Forest, XGBoost) for non-linear insights
+* ✂️ Apply **LASSO/Ridge regression** for smarter feature selection
+* 🧬 Add user-specific data (e.g., time of day, playlists, skip behavior)
+* 🌀 Explore **interaction effects** between predictors
+* 🔬 Genre-specific deep dives with clustering
 
 ---
 
-## 💾 Output
+## 💾 Output Dataset
 
-A cleaned and reduced dataset was saved for model building as the dataframe with the following name:
+Final cleaned dataset for modeling:
 
 ```bash
 spotify_analysis_data
@@ -143,17 +130,17 @@ spotify_analysis_data
 
 ## 📎 References
 
-* Spotify Developer API
-* DataCamp: Regression Analysis in R
-* Project PDF Report: [Spotify-Regression-Analysis.pdf](./Spotify-Regression-Analysis.pdf)
+* 📘 Spotify Developer API
+* 📊 DataCamp: Regression in R
+* 📄 Project Report: [Spotify-Regression-Analysis.pdf](./Spotify-Regression-Analysis.pdf)
 
 ---
 
-## 👥 Contributors
+## 👥 Team
 
-* **Lakshmi Sindhu Pulugundla**
-* **Lasya Priya Thota**
-* **Kaustubh Dangche**
+* ✨ Lakshmi Sindhu Pulugundla
+* ✨ Lasya Priya Thota
+* ✨ Kaustubh Dangche
 
 ---
 
