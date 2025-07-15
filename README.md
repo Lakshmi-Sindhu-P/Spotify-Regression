@@ -130,8 +130,6 @@ spotify_analysis_data
 
 ## 📎 References
 
-* 📘 Spotify Developer API
-* 📊 DataCamp: Regression in R
 * 📄 Project Report: [Spotify-Regression-Analysis.pdf](./Spotify-Regression-Analysis.pdf)
 
 ---
