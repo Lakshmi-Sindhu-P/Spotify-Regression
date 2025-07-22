@@ -1,7 +1,6 @@
 # 🎧 Regression Analysis on Spotify Song Attributes
 
 **Course:** MATH564  
-**Contributors:** Lakshmi Sindhu Pulugundla, Lasya Priya Thota, Kaustubh Dangche
 
 ---
 
