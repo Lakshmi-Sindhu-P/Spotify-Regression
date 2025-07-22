@@ -133,11 +133,4 @@ spotify_analysis_data
 
 ---
 
-## 👥 Team
-
-* ✨ Lakshmi Sindhu Pulugundla
-* ✨ Lasya Priya Thota
-* ✨ Kaustubh Dangche
-
----
 
