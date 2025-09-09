@@ -33,16 +33,16 @@ This project investigates which audio features and metadata influence a listener
 
 ## 📊 Exploratory Data Analysis (EDA)
 
-### 🎼 3.1 Continuous Variables
+### 🎼 Continuous Variables
 - `msPlayed` was right-skewed  
 - `danceability`, `energy`, and `tempo` became well-centered after normalization  
 
-### 📚 3.2 Categorical Distribution
+### 📚 Categorical Distribution
 - Dominant genres: Pop, Alternative, Bollywood, Phonk  
 - Top artists: blackbear, Lauv, Linkin Park  
 - `"Other"` category helped reduce noise from rare entries
 
-### 💫 3.3.1 Bivariate Analysis
+### 💫 Bivariate Analysis
 - No clear linear relationships between playback time and features like tempo or energy  
 - Notable artist outliers: Low Roar, Radwimps  
 - Genre variability: Metal and Pop showed higher spread
