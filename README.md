@@ -12,7 +12,7 @@ This project investigates which audio features and metadata influence a listener
 
 ## 📁 Dataset Overview
 
-- **Source:** Spotify Song Attributes  
+- **Source:** [Spotify Song Attributes](https://www.kaggle.com/datasets/geomack/spotifyclassification)  
 - **Total Records:** 10,080  
 - **Response Variable:** `msPlayed`  
 - **Predictors:**
